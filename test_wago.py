@@ -1,14 +1,27 @@
 from wago import repl_wago
+from main import try_parse_header
 
 
 def mktest(raw: str, expected: str) -> None:
     raw = raw.strip()
     expected = expected.strip()
     received = repl_wago(raw)
+    for idx, (exp, rec) in enumerate(
+        zip(expected.splitlines(), received.splitlines()),
+    ):
+        if exp != rec:
+            print(f"First diff at {idx=}:\n{exp=}\n{rec=}")
+            break
     assert expected == received, received
 
 
-def test_repl_wago1():
+def test_try_parse_header() -> None:
+    s = "===和語の漢字表記==="
+    pos = "和語の漢字表記"
+    assert try_parse_header(s, pos)
+
+
+def test_repl_wago_base() -> None:
     raw = """
 ===和語の漢字表記===
 [[Category:{{ja}} 和語の漢字表記]]
@@ -23,9 +36,38 @@ def test_repl_wago1():
     mktest(raw, expected)
 
 
-def test_repl_wago2():
+# Only the second one is a wago redirection!
+def test_repl_wago_multiple() -> None:
     raw = """
-{{kana-DEFAULTSORT|わかれ}}
+=={{L|ja}}==
+[[Category:{{ja}}]]
+==={{noun}}：ぎぶつ===
+{{head|jpn|noun|sort=きふつ ぎぶつ|head=[[偽]][[物]]}}（ぎぶつ）
+#[[にせもの]]。
+===={{pron}}====
+;ぎ↗ぶつ
+==={{noun}}：にせもの===
+[[カテゴリ:{{ja}} 和語の漢字表記]]
+{{jachars}}（にせもの）
+#「'''[[にせもの]]'''」を参照。
+"""
+    expected = """
+=={{L|ja}}==
+[[Category:{{ja}}]]
+==={{noun}}：ぎぶつ===
+{{head|jpn|noun|sort=きふつ ぎぶつ|head=[[偽]][[物]]}}（ぎぶつ）
+#[[にせもの]]。
+===={{pron}}====
+;ぎ↗ぶつ
+==={{wago}}===
+{{ja-wagokanji|にせもの}}
+#{{wagokanji of|にせもの}}
+        """
+    mktest(raw, expected)
+
+
+def test_repl_wago1():
+    raw = """
 =={{ja}}==
 [[カテゴリ:{{ja}}]]
 ===和語の漢字表記===
@@ -34,7 +76,6 @@ def test_repl_wago2():
 #'''[[わかれ]]'''を参照。
         """
     expected = """
-{{kana-DEFAULTSORT|わかれ}}
 =={{ja}}==
 [[カテゴリ:{{ja}}]]
 ==={{wago}}===
@@ -44,7 +85,7 @@ def test_repl_wago2():
     mktest(raw, expected)
 
 
-def test_repl_wago3():
+def test_repl_wago2():
     raw = """
 {{DEFAULTSORT:こころのこり}}
 =={{ja}}==
@@ -65,8 +106,24 @@ def test_repl_wago3():
     mktest(raw, expected)
 
 
-# Weird bold template!
-def test_repl_wago4():
+# We don't delete categories after the reading
+def test_repl_wago_untouched_after_reading() -> None:
+    raw = """
+===和語の漢字表記===
+{{lang|ja|'''[[奨]]める'''}}（すすめる）
+#'''[[すすめる]]'''　参照
+[[カテゴリ:{{ja}} 和語の漢字表記]]
+"""
+    expected = """
+==={{wago}}===
+{{ja-wagokanji|すすめる}}
+#{{wagokanji of|すすめる}}
+[[カテゴリ:{{ja}} 和語の漢字表記]]
+"""
+    mktest(raw, expected)
+
+
+def test_repl_wago_weird_template():
     raw = """
 {{DEFAULTSORT:おもい}}
 =={{ja}}==

@@ -133,6 +133,42 @@ def test_repl_ja_bold_base() -> None:
     mktest(raw, expected)
 
 
+def test_repl_ja_bold_multiple() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}|れんしよう れんじょう]]
+'''[[恋]] [[情]]'''（[[れんじょう]]）
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}|れんしよう れんじょう]]
+'''[[恋]] [[情]]'''（[[れんじょう]]）
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[れんじょう]]}}
+==={{noun}}===
+{{ja-noun|[[れんじょう]]}}
+"""
+    mktest(raw, expected)
+
+
+def test_repl_ja_bold_multiple_mixed() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}|れんしよう れんじょう]]
+'''[[恋]] [[情]]'''（[[れんじょう]]）
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}|れんしよう れんじょう]]
+{{jachars}} ([[れんじょう]])
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[れんじょう]]}}
+==={{noun}}===
+{{ja-noun|[[れんじょう]]}}
+"""
+    mktest(raw, expected)
+
+
 def test_repl_ja_bold_two_readings() -> None:
     raw = """
 ==={{noun}}===
@@ -366,6 +402,23 @@ def test_repl_ja_adverb1() -> None:
     mktest(raw, expected)
 
 
+def test_repl_ja_name1() -> None:
+    raw = """
+==={{name}}===
+{{wikipedia|アフリカ}}
+[[category:{{ja}}_{{name}}]]
+{{jachars|アフリカ}} (アフリカ)
+#'''[[アフリカ]]'''の日本語による漢字表記。
+"""
+    expected = """
+==={{name}}===
+{{wikipedia|アフリカ}}
+{{ja-name|アフリカ}}
+#'''[[アフリカ]]'''の日本語による漢字表記。
+"""
+    mktest(raw, expected)
+
+
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with 異表記?")
@@ -431,4 +484,21 @@ def test_repl_ja_noun_adjnoun() -> None:
 {{jachar|悪|辣}}（'''あくらつ'''）
 #たちが悪いこと。[[あくどい]]こと。
         """
+    mktest(raw, expected)
+
+
+@pytest.mark.skip(reason="not implemented yet, cursed template")
+def test_repl_ja_cursed() -> None:
+    raw = """
+==={{noun}}===
+{{head|ja|noun|head={{jachars}}}}（[[あいはん]]）
+# 「'''[[合印]]'''」に同じ。
+#[[連帯]]して[[押印]]すること。
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[あいはん]]}}
+# 「'''[[合印]]'''」に同じ。
+#[[連帯]]して[[押印]]すること。
+"""
     mktest(raw, expected)
