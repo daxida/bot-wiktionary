@@ -29,7 +29,7 @@ Similarly, there are other replacement functions for some other fixes, but those
 
 ### Usage
 
-Install with `pip install .`.
+Install with `pip install .`
 
 Tests are run with `pytest --verbose` (the verbose flag will show why some tests are skipped).
 
