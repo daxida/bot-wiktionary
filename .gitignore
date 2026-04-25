@@ -1,4 +1,7 @@
 __pycache__/
 
+apicache/
+throttle.ctrl
+
 input.txt
 output.txt
