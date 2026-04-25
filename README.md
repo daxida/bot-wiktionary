@@ -1,3 +1,7 @@
+[English](README.md) | [日本語](README.ja.md)
+
+---
+
 Prototype of a bot for the [Japanese Wiktionary](https://ja.wiktionary.org/wiki/Wiktionary:メインページ)
 
 At the moment it only contains a series of string replacements that should applied by the bot.
@@ -20,6 +24,8 @@ def repl(s: str) -> str:
 ```
 
 Similarly, there are other replacement functions for some other fixes, but those are not prioritary.
+
+---
 
 ### Test
 
