@@ -1,4 +1,4 @@
-from trans import repl_trans
+from wiktbot.trans import repl_trans
 
 
 def mktest(raw: str, expected: str) -> None:

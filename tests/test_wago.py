@@ -1,5 +1,4 @@
-from wago import repl_wago
-from main import try_parse_header
+from wiktbot.wago import repl_wago
 
 
 def mktest(raw: str, expected: str) -> None:
@@ -13,12 +12,6 @@ def mktest(raw: str, expected: str) -> None:
             print(f"First diff at {idx=}:\n{exp=}\n{rec=}")
             break
     assert expected == received, received
-
-
-def test_try_parse_header() -> None:
-    s = "===和語の漢字表記==="
-    pos = "和語の漢字表記"
-    assert try_parse_header(s, pos)
 
 
 def test_repl_wago_base() -> None:

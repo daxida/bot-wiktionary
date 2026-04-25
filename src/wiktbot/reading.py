@@ -18,12 +18,6 @@ class Prelude:
     wikipedia: list[str]
 
 
-SURU_VERB_CATEGORIES = [
-    "[[Category:{{ja}}_{{noun}}_サ変動詞]]",
-    "[[Category:{{ja}} {{noun}}_サ変動詞]]",
-]
-
-
 def template_name(header: Header) -> str:
     match header:
         case "adverb":
@@ -53,7 +47,7 @@ def try_repl_with_callback(
         if replaced is None:
             result_lines.extend(section)
         else:
-            print(f"Found replacement at section {fr}-{to}")
+            # print(f"Found replacement at section {fr}-{to}")
             result_lines.extend(replaced)
             changed = True
     if not changed:
@@ -68,7 +62,7 @@ def try_repl(s: str, header: Pos) -> str | None:
 
 def try_repl_section(section: list[str], header: Header) -> list[str] | None:
     prelude = extract_prelude(section, header)
-    print(f"Found {prelude=} {section=}")
+    # print(f"Found {prelude=} {section=}")
     if prelude.idx == 1:
         return None
 
@@ -81,7 +75,7 @@ def try_repl_section(section: list[str], header: Header) -> list[str] | None:
         ("jachar", extract_reading_jachar),
     ):
         if reading := extract_fn(section[prelude.idx]):
-            print(f"Found {label} {reading=}")
+            # print(f"Found {label} {reading=}")
             break
     if not reading:
         return None
@@ -89,7 +83,7 @@ def try_repl_section(section: list[str], header: Header) -> list[str] | None:
     readings: list[str] = [reading]
 
     if not is_kana_only(reading):
-        print(f"[WARN] {reading=} is not kana-only. Trying multiple readings...")
+        # print(f"[WARN] {reading=} is not kana-only. Trying multiple readings...")
         if many_readings := try_split_reading(reading):
             readings = many_readings
         else:
@@ -108,6 +102,12 @@ def try_repl_section(section: list[str], header: Header) -> list[str] | None:
 
 def extract_headers(lines: list[str], header: Header) -> list[int]:
     return [i for i, line in enumerate(lines) if try_parse_header(line, header)]
+
+
+SURU_VERB_CATEGORIES = [
+    "[[Category:{{ja}}_{{noun}}_サ変動詞]]",
+    "[[Category:{{ja}} {{noun}}_サ変動詞]]",
+]
 
 
 def extract_prelude(lines: list[str], header: Header) -> Prelude:
@@ -216,18 +216,7 @@ def try_split_reading(s: str) -> list[str]:
     return []
 
 
-def repl_ja_template(s: str) -> str:
+def repl_reading(s: str) -> str:
     for pos in ("noun", "adverb", "name"):
         s = try_repl(s, pos) or s
     return s
-
-
-def main() -> None:
-    import test_main
-
-    test_main.test_repl_ja_jachar_multiple_readings()
-    # test_main.test_repl_ja_bold_multiple()
-
-
-if __name__ == "__main__":
-    main()

@@ -1,12 +1,13 @@
 [project]
-name = "bot-wiktionary"
+name = "wiktbot"
 version = "0.1.0"
-description = "Add your description here"
+description = "A bot for the japanese wiktionary"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
-
-[tool.uv.workspace]
-members = [
-    "bot-wiktionary",
+dependencies = [
+    "pywikibot",
+    "pytest",
 ]
+
+[project.scripts]
+wb = "wiktbot.cli:main"

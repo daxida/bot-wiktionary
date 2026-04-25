@@ -1,7 +1,6 @@
 """Test that pages with no errors do not get modified."""
 
-from main import repl_ja_template
-from wago import repl_wago
+from wiktbot.main import repl
 
 CORRECT_PAGES = [
     """
@@ -17,5 +16,4 @@ CORRECT_PAGES = [
 
 def test_correct_page_remains_the_same() -> None:
     for page in CORRECT_PAGES:
-        assert repl_ja_template(page) == page
-        assert repl_wago(page) == page
+        assert repl(page) == page

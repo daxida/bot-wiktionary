@@ -16,7 +16,7 @@ Method:
 
 import re
 
-from main import (
+from wiktbot.reading import (
     Header,
     extract_prelude,
     try_repl_with_callback,
@@ -43,6 +43,9 @@ def try_repl_wago_section(section: list[str], header: Header) -> list[str] | Non
     # - {{lang|ja|'''[[奨]]める'''}}（すすめる）
     prelude.idx += 1
     prelude.idx = skip_empty_lines(prelude.idx, section)
+
+    if prelude.idx >= len(section):
+        return None
 
     reading = extract_reading_from_reference(section[prelude.idx])
     if not reading:
@@ -73,13 +76,3 @@ def repl_wago(s: str) -> str:
     for header in ("和語の漢字表記", "noun"):
         s = try_repl_wago(s, header) or s
     return s
-
-
-def main() -> None:
-    import test_wago
-
-    test_wago.test_repl_wago_multiple()
-
-
-if __name__ == "__main__":
-    main()

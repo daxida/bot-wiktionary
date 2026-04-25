@@ -1,16 +1,16 @@
 import pytest
 
-from main import repl_ja_template
+from wiktbot.reading import repl_reading
 
 
 def mktest(raw: str, expected: str) -> None:
     raw = raw.strip()
     expected = expected.strip()
-    received = repl_ja_template(raw)
+    received = repl_reading(raw)
     assert expected == received, received
 
 
-def test_repl_ja_noun_suru() -> None:
+def test_noun_suru() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}}_{{noun}}]]
@@ -24,7 +24,21 @@ def test_repl_ja_noun_suru() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_jachar1() -> None:
+def test_empty_reading() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}} {{noun}}]]
+# 「[[アーキテクチャ]]」の表記ゆれ。
+"""
+    expected = """
+==={{noun}}===
+[[Category:{{ja}} {{noun}}]]
+# 「[[アーキテクチャ]]」の表記ゆれ。
+"""
+    mktest(raw, expected)
+
+
+def test_jachar1() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}]]
@@ -45,7 +59,7 @@ def test_repl_ja_jachar1() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_jachar2() -> None:
+def test_jachar2() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}]]
@@ -72,7 +86,7 @@ def test_repl_ja_jachar2() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_jachars() -> None:
+def test_jachars() -> None:
     raw = """
 {{DEFAULTSORT:さいしゆう さいしゅう 最終}}
 =={{ja}}==
@@ -97,7 +111,7 @@ def test_repl_ja_jachars() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_jachars_with_inner_category() -> None:
+def test_jachars_with_inner_category() -> None:
     raw = """
 ==={{noun}}===
 [[カテゴリ:{{ja}}_{{noun}}]]
@@ -114,7 +128,7 @@ def test_repl_ja_jachars_with_inner_category() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_base() -> None:
+def test_bold_base() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}|れんしよう れんじょう]]
@@ -133,7 +147,7 @@ def test_repl_ja_bold_base() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_multiple() -> None:
+def test_bold_multiple() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}}_{{noun}}|れんしよう れんじょう]]
@@ -151,7 +165,7 @@ def test_repl_ja_bold_multiple() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_multiple_mixed() -> None:
+def test_bold_multiple_mixed() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}}_{{noun}}|れんしよう れんじょう]]
@@ -169,7 +183,7 @@ def test_repl_ja_bold_multiple_mixed() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_jachar_multiple_readings() -> None:
+def test_jachar_multiple_readings() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}]]
@@ -196,7 +210,7 @@ def test_repl_ja_jachar_multiple_readings() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_two_readings() -> None:
+def test_bold_two_readings() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}} {{noun}}]]
@@ -211,7 +225,7 @@ def test_repl_ja_bold_two_readings() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_long() -> None:
+def test_bold_long() -> None:
     raw = """
 {{wikipedia}}
 =={{ja}}==
@@ -314,7 +328,7 @@ def test_repl_ja_bold_long() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_extra_empty_line() -> None:
+def test_bold_extra_empty_line() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}]]
@@ -338,7 +352,7 @@ def test_repl_ja_bold_extra_empty_line() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_with_bold_reading() -> None:
+def test_bold_with_bold_reading() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}} {{noun}}]]
@@ -352,7 +366,7 @@ def test_repl_ja_bold_with_bold_reading() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold_with_inner_category() -> None:
+def test_bold_with_inner_category() -> None:
     raw = """
 ==={{noun}}===
 [[カテゴリ:{{ja}}_{{noun}}]]
@@ -369,7 +383,7 @@ def test_repl_ja_bold_with_inner_category() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_bold1() -> None:
+def test_bold1() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}} {{noun}}]]
@@ -389,7 +403,7 @@ def test_repl_ja_bold1() -> None:
 
 # TODO: This is more a question than a skip
 # @pytest.mark.skip(reason="not implemented yet, should we keep the hyphen?")
-def test_repl_ja_bold2() -> None:
+def test_bold2() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}|あいさかり]]
@@ -408,7 +422,7 @@ def test_repl_ja_bold2() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_adverb1() -> None:
+def test_adverb1() -> None:
     raw = """
 {{DEFAULTSORT:いくえにも {{PAGENAME}}}}
 =={{ja}}==
@@ -429,7 +443,7 @@ def test_repl_ja_adverb1() -> None:
     mktest(raw, expected)
 
 
-def test_repl_ja_name1() -> None:
+def test_name1() -> None:
     raw = """
 ==={{name}}===
 {{wikipedia|アフリカ}}
@@ -449,7 +463,7 @@ def test_repl_ja_name1() -> None:
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with 異表記?")
-def test_repl_ja_adverb_with_noise() -> None:
+def test_adverb_with_noise() -> None:
     # https://ja.wiktionary.org/wiki/%E6%80%8F%E6%80%8F
     raw = """
 =={{ja}}==
@@ -473,7 +487,7 @@ def test_repl_ja_adverb_with_noise() -> None:
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with this?")
-def test_repl_ja_adjnoun_with_noise() -> None:
+def test_adjnoun_with_noise() -> None:
     raw = """
 ==={{adjectivenoun}}===
 [[Category:{{ja}}_{{adjectivenoun}}]]
@@ -496,7 +510,7 @@ def test_repl_ja_adjnoun_with_noise() -> None:
 # I think it should be split over two sections so this is not feasible
 # Like here:
 # https://ja.wiktionary.org/w/index.php?title=%E6%82%AA%E5%B9%B3%E7%AD%89&action=edit
-def test_repl_ja_noun_adjnoun() -> None:
+def test_noun_adjnoun() -> None:
     raw = """
 ==={{noun}}・{{adjectivenoun}}===
 [[category:{{ja}}_{{noun}}]]
@@ -515,7 +529,7 @@ def test_repl_ja_noun_adjnoun() -> None:
 
 
 @pytest.mark.skip(reason="not implemented yet, cursed template")
-def test_repl_ja_cursed() -> None:
+def test_cursed() -> None:
     raw = """
 ==={{noun}}===
 {{head|ja|noun|head={{jachars}}}}（[[あいはん]]）

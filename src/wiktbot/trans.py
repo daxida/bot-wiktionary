@@ -1,6 +1,6 @@
 import re
 
-from main import (
+from wiktbot.reading import (
     Header,
     try_repl_with_callback,
 )
@@ -27,13 +27,3 @@ def repl_trans(s: str) -> str:
     for header in ("trans",):
         s = try_repl_trans(s, header) or s
     return s
-
-
-def main() -> None:
-    import test_trans
-
-    test_trans.test_repl_trans_base()
-
-
-if __name__ == "__main__":
-    main()

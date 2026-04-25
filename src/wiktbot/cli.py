@@ -2,35 +2,33 @@ import argparse
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
-from main import repl_ja_template
-from wago import repl_wago
-from trans import repl_trans
+from wiktbot.main import repl
+from wiktbot.bot import run
+
+
+Cmd = Literal["run", "repl", "snapshot"]
 
 
 @dataclass
 class Args:
     ipath: Path
     opath: Path
-    command: str | None
+    command: Cmd
     fixture_dir: Path | None = None
+    max_pages: int = 100
 
 
-def repl(s: str) -> str:
-    s = repl_ja_template(s)
-    s = repl_wago(s)
-    s = repl_trans(s)
-    return s
-
-
-def cmd_run(args: Args) -> None:
+def cmd_repl(args: Args) -> None:
+    print(f"Reading @ {args.ipath}")
     text = args.ipath.read_text(encoding="utf-8")
     # Overwrite with stripped contents for simpler diffs
     args.ipath.write_text(text.strip(), encoding="utf-8")
 
     result = repl(text)
     args.opath.write_text(result, encoding="utf-8")
-    print(f"Wrote output to {args.opath}")
+    print(f"Writing @ {args.opath}")
 
 
 def cmd_snapshot(args: Args) -> None:
@@ -43,11 +41,11 @@ def cmd_snapshot(args: Args) -> None:
 
     dest = args.fixture_dir / f"test_{now}.txt"
     dest.write_text(f"{input_text}\n</>\n{output_text}", encoding="utf-8")
-    print(f"Snapshot written to {dest}")
+    print(f"Snapshot written @ {dest}")
 
 
 def parse_args() -> Args:
-    parser = argparse.ArgumentParser(description="repl_ja_template CLI")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input", default="input.txt", help="Input file (default: input.txt)"
     )
@@ -56,27 +54,37 @@ def parse_args() -> Args:
     )
 
     subparsers = parser.add_subparsers(dest="command")
-    subparsers.add_parser("run", help="Process input.txt and write output.txt")
+    run = subparsers.add_parser("run", help="Run the bot for scanning")
+    run.add_argument("max_pages", type=int, nargs="?", default=100)
+
+    subparsers.add_parser("repl", help="Process input.txt and write output.txt")
+
     snap = subparsers.add_parser(
         "snapshot", help="Copy input/output to a fixture folder"
     )
     snap.add_argument(
         "fixture_dir",
         nargs="?",
-        default="fixtures",
-        help="Destination folder (default: fixtures)",
+        default="tests/fixtures",
+        help="Destination folder (default: tests/fixtures)",
     )
+
     args = parser.parse_args()
 
     fixture_dir = None
     if _fixture_dir := getattr(args, "fixture_dir", None):
         fixture_dir = Path(_fixture_dir)
 
+    max_pages = 100
+    if _max_pages := getattr(args, "max_pages", None):
+        max_pages = _max_pages
+
     return Args(
         ipath=Path(args.input),
         opath=Path(args.output),
         command=args.command,
         fixture_dir=fixture_dir,
+        max_pages=max_pages,
     )
 
 
@@ -86,8 +94,10 @@ def main() -> None:
     match args.command:
         case "snapshot":
             cmd_snapshot(args)
-        case _:
-            cmd_run(args)
+        case "repl":
+            cmd_repl(args)
+        case "run":
+            run(args.max_pages)
 
 
 if __name__ == "__main__":

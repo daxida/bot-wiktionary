@@ -1,7 +1,44 @@
 import difflib
 import pywikibot
 from pywikibot import pagegenerators
-from main import repl_ja_template
+from wiktbot.main import repl
+
+
+def run(max_pages: int) -> None:
+    try:
+        _run(max_pages)
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt")
+
+
+def _run(max_pages: int) -> None:
+    site = pywikibot.Site("ja", "wiktionary")
+    cat = pywikibot.Category(site, "Category:日本語_名詞")
+    gen = pagegenerators.CategorizedPageGenerator(cat)
+    gen = pagegenerators.PreloadingGenerator(gen, groupsize=50)
+
+    sections = []
+
+    for idx, page in enumerate(gen, 1):
+        if idx >= max_pages:
+            break
+
+        print(f"Scanning {page.title()} @ {page.full_url()}")
+        text = page.text
+        replaced = repl(text)
+        if text != replaced:
+            diff = difflib.unified_diff(
+                text.splitlines(keepends=True),
+                replaced.splitlines(keepends=True),
+            )
+            body = "".join(format_line(line) for line in diff)
+            sections.append(section(page, body))
+
+    title = f"diff/diff_{max_pages}.html"
+    with open(title, "w", encoding="utf-8") as f:
+        f.write(html(sections))
+
+    print(f"Written to {title}")
 
 
 def format_line(line: str) -> str:
@@ -12,37 +49,6 @@ def format_line(line: str) -> str:
     elif line.startswith("-"):
         return f'<span class="rem">{line}</span>'
     return line
-
-
-def main() -> None:
-    site = pywikibot.Site("ja", "wiktionary")
-    cat = pywikibot.Category(site, "Category:日本語_名詞")
-    gen = pagegenerators.CategorizedPageGenerator(cat)
-    gen = pagegenerators.PreloadingGenerator(gen, groupsize=50)
-
-    MAX_PAGES = 1000
-
-    sections = []
-
-    for idx, page in enumerate(gen):
-        if idx > MAX_PAGES:
-            break
-
-        text = page.text
-        repl = repl_ja_template(text)
-        if text != repl:
-            diff = difflib.unified_diff(
-                text.splitlines(keepends=True),
-                repl.splitlines(keepends=True),
-            )
-            body = "".join(format_line(line) for line in diff)
-            sections.append(section(page, body))
-
-    title = f"diff/diff_{MAX_PAGES}.html"
-    with open(title, "w", encoding="utf-8") as f:
-        f.write(html(sections))
-
-    print(f"Written to {title}")
 
 
 def section(page, body: str) -> str:
@@ -74,10 +80,3 @@ def html(sections: list[str]) -> str:
 {"".join(sections)}
 </body>
 </html>"""
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt")

@@ -6,7 +6,7 @@ Prototype of a bot for the [Japanese Wiktionary](https://ja.wiktionary.org/wiki/
 
 At the moment it only contains a series of string replacements that should applied by the bot.
 
-The main transformation, implemented in `main.py` updates to the `{{ja-noun}}` (and variants) template.
+The main transformation, implemented in `reading.py` updates to the `{{ja-noun}}` (and variants) template.
 
 ```diff
 ==={{noun}}===
@@ -27,9 +27,13 @@ Similarly, there are other replacement functions for some other fixes, but those
 
 ---
 
-### Test
+### Usage
 
-Requires pytest (`pip install pytest`), then run `pytest --verbose` (the verbose flag will show why some tests are skipped).
+Install with `pip install .`.
+
+Tests are run with `pytest --verbose` (the verbose flag will show why some tests are skipped).
+
+The project includes a CLI entry-point via `wb`. You can, for instance, run `wb run` to test the `repl` function against wikipages.
 
 ### TODO
 - [ ] What is the difference between "ja-proper noun" [sample](https://ja.wiktionary.org/w/index.php?title=%E3%82%A2%E3%83%A0%E3%82%B9%E3%83%86%E3%83%AB%E3%83%80%E3%83%A0&action=edit) and "ja-name"

@@ -1,9 +1,9 @@
 from pathlib import Path
-from cli import repl_ja_template
+from wiktbot.main import repl
 
 
 def test_fixtures() -> None:
-    fixture_dir = Path("fixtures")
+    fixture_dir = Path("tests/fixtures")
     fixture_files = sorted(fixture_dir.glob("test_*.txt"))
     assert fixture_files, "No fixture files found in fixtures/"
 
@@ -14,5 +14,5 @@ def test_fixtures() -> None:
         input_text = input_text.strip()
         expected = expected.strip()
 
-        result = repl_ja_template(input_text)
+        result = repl(input_text)
         assert result == expected
