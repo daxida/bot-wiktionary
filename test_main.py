@@ -169,6 +169,33 @@ def test_repl_ja_bold_multiple_mixed() -> None:
     mktest(raw, expected)
 
 
+def test_repl_ja_jachar_multiple_readings() -> None:
+    raw = """
+=={{ja}}==
+[[Category:{{ja}}]]
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}]]
+[[Category:{{ja}}_刀剣|ちくとう]]
+[[Category:{{ja}}_剣道]]
+[[Category:{{ja}}_短剣道]]
+[[カテゴリ:常用漢字表 付表|しない]]
+{{jachar|竹|刀}}【ちくとう、[[たけがたな]]、[[しない]]】
+# （ちくとう、たけがたな）竹製の[[かたな|刀]]。[[竹光]]。
+"""
+    expected = """
+=={{ja}}==
+[[Category:{{ja}}]]
+==={{noun}}===
+{{ja-noun|ちくとう|[[たけがたな]]|[[しない]]}}
+[[Category:{{ja}}_刀剣|ちくとう]]
+[[Category:{{ja}}_剣道]]
+[[Category:{{ja}}_短剣道]]
+[[カテゴリ:常用漢字表 付表|しない]]
+# （ちくとう、たけがたな）竹製の[[かたな|刀]]。[[竹光]]。
+"""
+    mktest(raw, expected)
+
+
 def test_repl_ja_bold_two_readings() -> None:
     raw = """
 ==={{noun}}===

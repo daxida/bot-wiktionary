@@ -1,16 +1,19 @@
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal, get_args
 
+# Duplication is smelly, but there are no runtime alternatives.
+# The distinction is only important because of the extra {{ }} when parsing the header.
 Pos = Literal["noun", "noun-suru", "adverb", "name"]
-Header = Literal["和語の漢字表記"]
+Header = Literal["和語の漢字表記", "noun", "noun-suru", "adverb", "name"]
 POS_CHOICES = get_args(Pos)
 
 
 @dataclass
 class Prelude:
     idx: int
-    new_pos: Pos | None
+    new_header: Header | None
     categories: list[str]
     wikipedia: list[str]
 
@@ -21,64 +24,36 @@ SURU_VERB_CATEGORIES = [
 ]
 
 
-def template_name(pos: Pos) -> str:
-    match pos:
+def template_name(header: Header) -> str:
+    match header:
         case "adverb":
             return "adv"
         case _:
-            return pos
+            return header
 
 
-# jachar or jachars actually
-# TODO: support multiple readings
-def try_repl_jachar(s: str, pos: Pos) -> str | None:
+def try_repl_with_callback(
+    s: str,
+    header: Pos,
+    callback: Callable[[list[str], Header], list[str] | None],
+) -> str | None:
     lines = s.splitlines()
 
-    # try parse (one or more) pos sections
-    idxs_pos = extract_poses(lines, pos)
-    if not idxs_pos:
+    idxs = extract_headers(lines, header)
+    if not idxs:
         return None
-    idxs_pos.append(len(lines))
-    sections = [(idxs_pos[i], idxs_pos[i + 1]) for i in range(len(idxs_pos) - 1)]
 
-    def try_repl_jachar_section(pos: Pos, section: list[str]) -> list[str] | None:
-        prelude = extract_prelude(section, 0, pos)
-        if prelude.idx == 1:
-            return None
-        if prelude.new_pos is not None:
-            pos = prelude.new_pos
-        print(f"[jachar] Found {prelude=}")
-        print(f"[jachar] Line after prelude {lines[prelude.idx]}")
-
-        reading = extract_reading_jachar(s)
-        if not reading:
-            return None
-        print(f"[jachar] Found {reading=}")
-
-        if not is_kana_only(reading):
-            print(f"[WARN] {reading=} is not kana-only")
-            return None
-
-        to_add = f"{{{{ja-{pos}|{reading}}}}}"
-
-        new_lines = section[:1]  # up until (included) pos
-        new_lines.extend(prelude.wikipedia)
-        new_lines.append(to_add)
-        new_lines.extend(prelude.categories)
-        new_lines.extend(section[prelude.idx + 1 :])  # after jachar
-
-        return new_lines
-
-    first_start = sections[0][0]
-    result_lines: list[str] = lines[:first_start]
+    sections = list(zip(idxs, idxs[1:] + [len(lines)]))
+    result_lines = lines[: idxs[0]]
     changed = False
+
     for fr, to in sections:
         section = lines[fr:to]
-        replaced = try_repl_jachar_section(pos, section)
+        replaced = callback(section, header)
         if replaced is None:
             result_lines.extend(section)
         else:
-            print(f"[jachar] Found replacement at section {fr}-{to}")
+            print(f"Found replacement at section {fr}-{to}")
             result_lines.extend(replaced)
             changed = True
     if not changed:
@@ -87,91 +62,66 @@ def try_repl_jachar(s: str, pos: Pos) -> str | None:
     return "\n".join(result_lines)
 
 
-def try_repl_bold(s: str, pos: Pos) -> str | None:
-    lines = s.splitlines()
+def try_repl(s: str, header: Pos) -> str | None:
+    return try_repl_with_callback(s, header, try_repl_section)
 
-    # try parse (one or more) pos sections
-    idxs_pos = extract_poses(lines, pos)
-    if not idxs_pos:
+
+def try_repl_section(section: list[str], header: Header) -> list[str] | None:
+    prelude = extract_prelude(section, header)
+    print(f"Found {prelude=} {section=}")
+    if prelude.idx == 1:
         return None
-    idxs_pos.append(len(lines))
-    sections = [(idxs_pos[i], idxs_pos[i + 1]) for i in range(len(idxs_pos) - 1)]
 
-    def try_repl_bold_section(pos: Pos, section: list[str]) -> list[str] | None:
-        prelude = extract_prelude(section, 0, pos)
-        print(f"[bold] Found {prelude=} {section=}")
-        if prelude.idx == 1:
-            return None
-        if prelude.new_pos is not None:
-            pos = prelude.new_pos
-        print(f"[bold] Found {prelude=}")
+    if prelude.new_header is not None:
+        header = prelude.new_header
 
-        reading = extract_reading_bold_kanji(s)
-        if not reading:
-            return None
-        print(f"[bold] Found {reading=}")
+    reading = None
+    for label, extract_fn in (
+        ("bold", extract_reading_bold_kanji),
+        ("jachar", extract_reading_jachar),
+    ):
+        if reading := extract_fn(section[prelude.idx]):
+            print(f"Found {label} {reading=}")
+            break
+    if not reading:
+        return None
 
-        readings: list[str] = [reading]
+    readings: list[str] = [reading]
 
-        if not is_kana_only(reading):
-            print(f"[WARN] {reading=} is not kana-only")
-            if many_readings := try_split_reading(reading):
-                readings = many_readings
-            else:
-                return None
-
-        final_reading = "|".join(readings)
-        pos_template_name = template_name(pos)
-        to_add = f"{{{{ja-{pos_template_name}|{final_reading}}}}}"
-
-        new_lines = section[:1]  # up until (included) pos
-        new_lines.extend(prelude.wikipedia)
-        new_lines.append(to_add)
-        new_lines.extend(prelude.categories)
-        new_lines.extend(section[prelude.idx + 1 :])  # after jachar
-
-        return new_lines
-
-    first_start = sections[0][0]
-    result_lines: list[str] = lines[:first_start]
-    changed = False
-    for fr, to in sections:
-        section = lines[fr:to]
-        # print(f"[bold] Trying replacement at section {fr}-{to}...")
-        replaced = try_repl_bold_section(pos, section)
-        if replaced is None:
-            result_lines.extend(section)
+    if not is_kana_only(reading):
+        print(f"[WARN] {reading=} is not kana-only. Trying multiple readings...")
+        if many_readings := try_split_reading(reading):
+            readings = many_readings
         else:
-            print(f"[bold] Found replacement at section {fr}-{to}")
-            result_lines.extend(replaced)
-            changed = True
-    if not changed:
-        return None
+            return None
 
-    return "\n".join(result_lines)
+    to_add = f"{{{{ja-{template_name(header)}|{'|'.join(readings)}}}}}"
+
+    return [
+        *section[:1],
+        *prelude.wikipedia,
+        to_add,
+        *prelude.categories,
+        *section[prelude.idx + 1 :],
+    ]
 
 
-def extract_poses(lines: list[str], pos: Pos) -> list[int]:
-    return [i for i, line in enumerate(lines) if try_parse_pos(line, pos)]
-
-
-def extract_header(lines: list[str], header: Header) -> list[int]:
+def extract_headers(lines: list[str], header: Header) -> list[int]:
     return [i for i, line in enumerate(lines) if try_parse_header(line, header)]
 
 
-def extract_prelude(lines: list[str], idx_pos: int, pos: Pos) -> Prelude:
-    """Consume the prelude, that is, the lines between the pos header, and
+def extract_prelude(lines: list[str], header: Header) -> Prelude:
+    """Consume the prelude, that is, the lines between the header header, and
     the line that contains the reading.
 
     This includes categories, wikipedia links etc.
 
     Categories should go after the {{ja-X}} template; wikipedia links, before.
     """
-    idx = idx_pos
-    idx += 1
+    idx = 1
     categories: list[str] = []
     wikipedia: list[str] = []
-    new_pos: Pos | None = None
+    new_header: Pos | None = None
 
     while idx < len(lines):
         line = lines[idx]
@@ -182,15 +132,15 @@ def extract_prelude(lines: list[str], idx_pos: int, pos: Pos) -> Prelude:
                 wikipedia.append(line)
                 idx += 1
                 continue
-        if pos == "noun" and line in SURU_VERB_CATEGORIES:
-            new_pos = "noun-suru"
-        if not is_removable_category(pos, line):
+        if header == "noun" and line in SURU_VERB_CATEGORIES:
+            new_header = "noun-suru"
+        if not is_removable_category(header, line):
             categories.append(line)
         idx += 1
 
     return Prelude(
         idx=idx,
-        new_pos=new_pos,
+        new_header=new_header,
         categories=categories,
         wikipedia=wikipedia,
     )
@@ -217,12 +167,6 @@ def extract_reading_jachar(s: str) -> str | None:
     return match.group(1) if match else None
 
 
-def extract_pos(s: str) -> str | None:
-    """Extract part of speech from ==={{pos}}=== header."""
-    match = re.search(r"===\{\{(.+?)\}\}===", s)
-    return match.group(1) if match else None
-
-
 def extract_reading_bold_kanji(s: str) -> str | None:
     """Extract: '''text'''（reading）"""
     match = re.search(r"(?:'''(.+?)'''|(.+?))[（【](.+?)[）】]", s)
@@ -233,14 +177,16 @@ def clean(s: str) -> str:
     return s.strip("'")
 
 
-def try_parse_pos(s: str, pos: Pos) -> bool:
-    # There can be readings after the pos: ==={{noun}}：ぎぶつ===
-    # There can be readings spaces between: === {{noun}} ===
-    return re.search(rf"===\s*\{{\{{{re.escape(pos)}\}}\}}[^={{}}]*===", s) is not None
-
-
 def try_parse_header(s: str, header: Header) -> bool:
-    return re.search(rf"==={re.escape(header)}===", s) is not None
+    if header in POS_CHOICES:
+        # There can be readings after the pos: ==={{noun}}：ぎぶつ===
+        # There can be readings spaces between: === {{noun}} ===
+        return (
+            re.search(rf"===\s*\{{\{{{re.escape(header)}\}}\}}[^={{}}]*===", s)
+            is not None
+        )
+    else:
+        return re.search(rf"==={re.escape(header)}===", s) is not None
 
 
 def try_parse_wikipedia_link(s: str) -> bool:
@@ -252,14 +198,14 @@ def try_parse_category(s: str, cat: str = "") -> bool:
     return re.search(rf"\[\[(?:[Cc]ategory|カテゴリ):{inner}\]\]", s) is not None
 
 
-def is_removable_category(pos: Pos, cat: str) -> bool:
+def is_removable_category(pos: Header, cat: str) -> bool:
     return (
         re.search(rf"\[\[(?:[Cc]ategory|カテゴリ):{{{{ja}}}}[ _]{{{{{pos}}}}}", cat)
         is not None
     )
 
 
-SEPARATORS = ","
+SEPARATORS = ",、"
 
 
 # If there is a separator, and it's in the middle, assume multiple readings!
@@ -270,27 +216,16 @@ def try_split_reading(s: str) -> list[str]:
     return []
 
 
-def repl_ja_template_with_pos(s: str, pos: Pos) -> str:
-    if repl := try_repl_jachar(s, pos):
-        print(f"[!] Success: jachar for {pos=}")
-        s = repl
-    if repl := try_repl_bold(s, pos):
-        print(f"[!] Success: bold for {pos=}")
-        s = repl
-
-    return s
-
-
 def repl_ja_template(s: str) -> str:
     for pos in ("noun", "adverb", "name"):
-        s = repl_ja_template_with_pos(s, pos)
+        s = try_repl(s, pos) or s
     return s
 
 
 def main() -> None:
     import test_main
 
-    test_main.test_repl_ja_bold_base()
+    test_main.test_repl_ja_jachar_multiple_readings()
     # test_main.test_repl_ja_bold_multiple()
 
 
