@@ -28,3 +28,15 @@ def test_repl_trans_base() -> None:
 *{{T|fr}}: {{t|fr|carrière}}
         """
     mktest(raw, expected)
+
+
+def test_repl_trans_already_correct() -> None:
+    raw = """
+===={{trans}}====
+*{{en}}: {{t|en|archives}}, {{t|en|archive}}
+"""
+    expected = """
+===={{trans}}====
+*{{en}}: {{t|en|archives}}, {{t|en|archive}}
+        """
+    mktest(raw, expected)

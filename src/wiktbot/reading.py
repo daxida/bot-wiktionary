@@ -112,8 +112,8 @@ SURU_VERB_CATEGORIES = [
 
 
 def extract_prelude(lines: list[str], header: Header) -> Prelude:
-    """Consume the prelude, that is, the lines between the header header, and
-    the line that contains the reading.
+    """Consume the prelude, that is, the lines between the header, and the line
+    that contains the reading.
 
     This includes categories, wikipedia links etc.
 
@@ -138,6 +138,10 @@ def extract_prelude(lines: list[str], header: Header) -> Prelude:
         if not is_removable_category(header, line):
             categories.append(line)
         idx += 1
+
+    # Backtrack if we found a gloss
+    if idx < len(lines) and lines[idx].startswith("#"):
+        idx -= 1
 
     return Prelude(
         idx=idx,

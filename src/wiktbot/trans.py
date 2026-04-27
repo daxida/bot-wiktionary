@@ -17,6 +17,8 @@ def try_repl_trans_section(section: list[str], header: Header) -> list[str] | No
             return line
         lang = m.group(1)
         words = re.findall(r"\[\[(.+?)\]\]", m.group(2))
+        if not words:
+            return line
         translations = ", ".join(f"{{{{t|{lang}|{w}}}}}" for w in words)
         return f"*{{{{T|{lang}}}}}: {translations}"
 

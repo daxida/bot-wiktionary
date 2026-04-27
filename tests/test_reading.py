@@ -24,7 +24,7 @@ def test_noun_suru() -> None:
     mktest(raw, expected)
 
 
-def test_empty_reading() -> None:
+def test_empty_reading1() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}} {{noun}}]]
@@ -34,6 +34,20 @@ def test_empty_reading() -> None:
 ==={{noun}}===
 [[Category:{{ja}} {{noun}}]]
 # 「[[アーキテクチャ]]」の表記ゆれ。
+"""
+    mktest(raw, expected)
+
+
+def test_empty_reading2() -> None:
+    raw = """
+==={{noun}}===
+[[カテゴリ:{{ja}}_{{noun}}]]
+#（'''[[いさご]]'''）細かい[[いし|石]]。[[すな]]。
+"""
+    expected = """
+==={{noun}}===
+[[カテゴリ:{{ja}}_{{noun}}]]
+#（'''[[いさご]]'''）細かい[[いし|石]]。[[すな]]。
 """
     mktest(raw, expected)
 
