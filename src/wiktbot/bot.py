@@ -2,20 +2,26 @@ import difflib
 import pywikibot
 from pywikibot import pagegenerators
 from wiktbot.main import repl
+from wiktbot.reading import repl_reading
 
 
-def run(max_pages: int) -> None:
+def run(max_pages: int, random: bool) -> None:
     try:
-        _run(max_pages)
+        _run(max_pages, random)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")
 
 
-def _run(max_pages: int) -> None:
+def _run(max_pages: int, random: bool) -> None:
     site = pywikibot.Site("ja", "wiktionary")
-    cat = pywikibot.Category(site, "Category:日本語_名詞")
-    gen = pagegenerators.CategorizedPageGenerator(cat)
-    gen = pagegenerators.PreloadingGenerator(gen, groupsize=50)
+
+    if random:
+        gen = pagegenerators.RandomPageGenerator(site=site)
+    else:
+        cat = pywikibot.Category(site, "Category:日本語_名詞")
+        gen = pagegenerators.CategorizedPageGenerator(cat)
+
+    gen = pagegenerators.PreloadingGenerator(gen, groupsize=25)
 
     sections = []
 
@@ -26,6 +32,7 @@ def _run(max_pages: int) -> None:
         print(f"Scanning {page.title()} @ {page.full_url()}")
         text = page.text
         replaced = repl(text)
+        # replaced = repl_reading(text)
         if text != replaced:
             diff = difflib.unified_diff(
                 text.splitlines(keepends=True),

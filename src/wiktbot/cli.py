@@ -18,6 +18,7 @@ class Args:
     command: Cmd
     fixture_dir: Path | None = None
     max_pages: int = 100
+    random: bool = False
 
 
 def cmd_repl(args: Args) -> None:
@@ -56,6 +57,7 @@ def parse_args() -> Args:
     subparsers = parser.add_subparsers(dest="command")
     run = subparsers.add_parser("run", help="Run the bot for scanning")
     run.add_argument("max_pages", type=int, nargs="?", default=100)
+    run.add_argument("--random", action="store_true", help="Scan in random order")
 
     subparsers.add_parser("repl", help="Process input.txt and write output.txt")
 
@@ -79,12 +81,15 @@ def parse_args() -> Args:
     if _max_pages := getattr(args, "max_pages", None):
         max_pages = _max_pages
 
+    random = getattr(args, "random", False)
+
     return Args(
         ipath=Path(args.input),
         opath=Path(args.output),
         command=args.command,
         fixture_dir=fixture_dir,
         max_pages=max_pages,
+        random=random,
     )
 
 
@@ -97,7 +102,7 @@ def main() -> None:
         case "repl":
             cmd_repl(args)
         case "run":
-            run(args.max_pages)
+            run(args.max_pages, args.random)
 
 
 if __name__ == "__main__":
