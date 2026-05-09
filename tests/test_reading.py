@@ -545,6 +545,46 @@ def test_verb() -> None:
     mktest(raw, expected)
 
 
+# Also fix the header (成句 instead of idiom)
+@pytest.mark.skip(reason="not implemented yet, needs fixing the header")
+def test_idiom1() -> None:
+    raw = """
+===成句===
+[[category:{{ja}}_{{idiom}}]]
+[[Category:故事成語]]
+[[Category:四字熟語]]
+'''[[四]][[面]][[楚]][[歌]]'''（しめんそか）
+#X
+"""
+    expected = """
+==={{idiom}}===
+{{ja-idiom|しめんそか}}
+[[Category:故事成語]]
+[[Category:四字熟語]]
+#X
+    """
+    mktest(raw, expected)
+
+
+def test_idiom2() -> None:
+    raw = """
+=== {{idiom}} ===
+[[Category:{{ja}}_{{idiom}}]]
+[[Category:故事成語]]
+[[Category:四字熟語]]
+'''[[羊]][[頭]][[狗]][[肉]]'''（ようとうくにく）
+#X
+"""
+    expected = """
+=== {{idiom}} ===
+{{ja-idiom|ようとうくにく}}
+[[Category:故事成語]]
+[[Category:四字熟語]]
+#X
+"""
+    mktest(raw, expected)
+
+
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with this?")

@@ -5,9 +5,17 @@ from typing import Literal, get_args
 
 # Duplication is smelly, but there are no runtime alternatives.
 # The distinction is only important because of the extra {{ }} when parsing the header.
-Pos = Literal["noun", "noun-suru", "adverb", "name", "trans", "adj", "verb"]
+Pos = Literal["noun", "noun-suru", "adverb", "name", "trans", "adj", "verb", "idiom"]
 Header = Literal[
-    "和語の漢字表記", "noun", "noun-suru", "adverb", "name", "trans", "adj", "verb"
+    "和語の漢字表記",
+    "noun",
+    "noun-suru",
+    "adverb",
+    "name",
+    "trans",
+    "adj",
+    "verb",
+    "idiom",
 ]
 POS_CHOICES = get_args(Pos)
 
@@ -262,7 +270,7 @@ def try_split_reading(s: str) -> list[str]:
 
 def repl_reading(s: str) -> str:
     found = False
-    for pos in ("noun", "adverb", "name", "adj", "verb"):
+    for pos in ("noun", "adverb", "name", "adj", "verb", "idiom"):
         if replacement := try_repl(s, pos):
             found = True
             s = replacement
