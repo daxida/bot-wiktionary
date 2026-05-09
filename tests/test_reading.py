@@ -530,6 +530,21 @@ def test_adj() -> None:
     mktest(raw, expected)
 
 
+def test_verb() -> None:
+    raw = """
+==={{verb}}===
+[[Category:{{ja}}_{{verb}}]]
+'''[[論]]じる'''（ろんじる）
+#X
+"""
+    expected = """
+==={{verb}}===
+{{ja-verb|ろんじる}}
+#X
+"""
+    mktest(raw, expected)
+
+
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with this?")
