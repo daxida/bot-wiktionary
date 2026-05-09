@@ -515,6 +515,21 @@ def test_adverb_with_noise() -> None:
     mktest(raw, expected)
 
 
+def test_adj() -> None:
+    raw = """
+==={{adj}}===
+[[Category:{{ja}} {{adj}}]]
+'''[[愛]]くるしい'''（あいくるしい）
+# [[愛嬌]]こぼれるばかりである。
+"""
+    expected = """
+==={{adj}}===
+{{ja-adj|あいくるしい}}
+# [[愛嬌]]こぼれるばかりである。
+"""
+    mktest(raw, expected)
+
+
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with this?")
