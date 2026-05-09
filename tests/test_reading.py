@@ -466,6 +466,30 @@ def test_name1() -> None:
     mktest(raw, expected)
 
 
+# Follows the final result of:
+# https://ja.wiktionary.org/wiki/%E6%84%9F%E5%8B%95%E8%A9%9E#Japanese
+def test_with_rare_reading() -> None:
+    raw = """
+{{Wikipedia|副詞}}
+=={{ja}}==
+[[Category:{{ja}}|ふくし]]
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}|ふくし]]
+[[Category:{{ja}}_品詞|ふくし]]
+'''[[副]] [[詞]]'''【[[ふくし]]、稀:そえことば】
+#[[品詞]]の一つ。日本語文法では、[[動詞]]・[[形容詞]]などの[[用言]]
+"""
+    expected = """
+{{Wikipedia|副詞}}
+=={{ja}}==
+==={{noun}}===
+{{ja-noun|[[ふくし]]}} (稀:そえことば)
+[[Category:{{ja}}_品詞|ふくし]]
+#[[品詞]]の一つ。日本語文法では、[[動詞]]・[[形容詞]]などの[[用言]]
+"""
+    mktest(raw, expected)
+
+
 # WARN: Do not change anything.
 # (Since there is no replacement, [[Category:{{ja}}|おうおう]] is unchanged)
 #

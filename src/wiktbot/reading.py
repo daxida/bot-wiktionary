@@ -80,17 +80,15 @@ def try_repl_section(section: list[str], header: Header) -> list[str] | None:
     if not reading:
         return None
 
-    readings: list[str] = [reading]
+    result = parse_readings(reading)
+    if result is None:
+        return None
+    readings, extra_readings = result
 
-    if not is_kana_only(reading):
-        # print(f"[WARN] {reading=} is not kana-only. Trying multiple readings...")
-        many_readings = try_split_reading(reading)
-        if many_readings and all(is_kana_only(r) for r in many_readings):
-            readings = many_readings
-        else:
-            return None
-
-    to_add = f"{{{{ja-{template_name(header)}|{'|'.join(readings)}}}}}"
+    extra_readings_str = "" if not extra_readings else f" ({', '.join(extra_readings)})"
+    to_add = (
+        f"{{{{ja-{template_name(header)}|{'|'.join(readings)}}}}}{extra_readings_str}"
+    )
 
     return [
         *section[:1],
@@ -149,6 +147,30 @@ def extract_prelude(lines: list[str], header: Header) -> Prelude:
         categories=categories,
         wikipedia=wikipedia,
     )
+
+
+def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
+    """Returns (readings, extra_readings) or None if parsing fails."""
+    if is_kana_only(reading):
+        return [reading], []
+
+    # print(f"[WARN] {reading=} is not kana-only. Trying multiple readings...")
+    many_readings = try_split_reading(reading)
+    if not many_readings:
+        # print("[WARN] 001 Failed multiple readings. Returning.")
+        return None
+
+    if all(is_kana_only(r) for r in many_readings):
+        return many_readings, []
+
+    # print(f"[WARN] Found {many_readings=} but they were not kana.")
+    if all(is_kana_only(r) or r.startswith("稀:") for r in many_readings):
+        readings = [r for r in many_readings if not r.startswith("稀:")]
+        extra_readings = [r for r in many_readings if r.startswith("稀:")]
+        return readings, extra_readings
+
+    # print("[WARN] 002 Failed multiple readings. Returning.")
+    return None
 
 
 def is_kana_only(s: str) -> bool:
