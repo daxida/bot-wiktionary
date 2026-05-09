@@ -213,10 +213,14 @@ def is_category_removable(pos: Header, cat: str) -> bool:
 def is_category_ja(line: str) -> bool:
     # Assumes line is in lowercase
     # * [[カテゴリ:日本語]]
+    # * [[カテゴリ:{{ja}}]]
     # * [[Category:{{ja}}]]
     # * [[Category:{{ja}}|れんしよう れんじょう]]
     return (
-        re.search(r"\[\[(?:category:\{\{ja\}\}|カテゴリ:日本語)(?:\|[^\]]+)?\]\]", line)
+        re.search(
+            r"\[\[(?:category:\{\{ja\}\}|カテゴリ:日本語|カテゴリ:\{\{ja\}\})(?:\|[^\]]+)?\]\]",
+            line,
+        )
         is not None
     )
 

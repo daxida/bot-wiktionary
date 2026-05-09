@@ -46,7 +46,6 @@ def test_repl_wago_multiple() -> None:
 """
     expected = """
 =={{L|ja}}==
-[[Category:{{ja}}]]
 ==={{noun}}：ぎぶつ===
 {{head|jpn|noun|sort=きふつ ぎぶつ|head=[[偽]][[物]]}}（ぎぶつ）
 #[[にせもの]]。
@@ -70,7 +69,6 @@ def test_repl_wago1():
         """
     expected = """
 =={{ja}}==
-[[カテゴリ:{{ja}}]]
 ==={{wago}}===
 {{ja-wagokanji|わかれ}}
 #{{wagokanji of|わかれ}}
@@ -91,7 +89,6 @@ def test_repl_wago2():
     expected = """
 {{DEFAULTSORT:こころのこり}}
 =={{ja}}==
-[[category:{{ja}}]]
 ==={{wago}}===
 {{ja-wagokanji|こころのこり}}
 #{{wagokanji of|こころのこり}}
@@ -118,10 +115,6 @@ def test_repl_wago_untouched_after_reading() -> None:
 
 def test_repl_wago_weird_template():
     raw = """
-{{DEFAULTSORT:おもい}}
-=={{ja}}==
-[[Category:{{ja}}]]
-
 ===和語の漢字表記===
 [[Category:{{ja}} 和語の漢字表記]]
 '''{{l|ja|想}}い'''
@@ -129,10 +122,6 @@ def test_repl_wago_weird_template():
 # 「'''[[おもい]]'''」を参照。
         """
     expected = """
-{{DEFAULTSORT:おもい}}
-=={{ja}}==
-[[Category:{{ja}}]]
-
 ==={{wago}}===
 {{ja-wagokanji|おもい}}
 #{{wagokanji of|おもい}}

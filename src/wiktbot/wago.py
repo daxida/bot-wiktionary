@@ -20,6 +20,7 @@ from wiktbot.reading import (
     Header,
     extract_prelude,
     try_repl_with_callback,
+    is_category_ja,
 )
 
 
@@ -73,6 +74,17 @@ def extract_reading_from_reference(s: str) -> str | None:
 
 
 def repl_wago(s: str) -> str:
+    found = False
     for header in ("和語の漢字表記", "noun"):
-        s = try_repl_wago(s, header) or s
+        if replacement := try_repl_wago(s, header):
+            found = True
+            s = replacement
+
+    # If we found a replacement, we can remove the category: [[カテゴリ:日本語]]
+    # anywhere on the wikitext (according to @Naggy Nagumo)
+    if found:
+        s = "\n".join(
+            line for line in s.splitlines() if not is_category_ja(line.lower().strip())
+        )
+
     return s
