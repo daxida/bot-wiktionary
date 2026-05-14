@@ -342,7 +342,7 @@ def test_bold_long() -> None:
     mktest(raw, expected)
 
 
-def test_bold_extra_empty_line() -> None:
+def test_bold_extra_empty_line1() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}]]
@@ -361,6 +361,24 @@ def test_bold_extra_empty_line() -> None:
 {{ja-noun-suru|あいがん}}
 
 # [[かわいがる]]こと。
+"""
+    mktest(raw, expected)
+
+def test_bold_extra_empty_line2() -> None:
+    raw = """
+=={{ja}}==
+[[Category:{{ja}}]]
+==={{noun}}===
+[[Category:{{ja}} {{noun}}]]
+
+'''[[執]] [[筆]]'''（しっぴつ） 
+#[[文章]]を[[書く]]こと。
+"""
+    expected = """
+=={{ja}}==
+==={{noun}}===
+{{ja-noun|しっぴつ}}
+#[[文章]]を[[書く]]こと。
 """
     mktest(raw, expected)
 

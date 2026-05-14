@@ -134,6 +134,9 @@ def extract_prelude(lines: list[str], header: Header) -> Prelude:
 
     while idx < len(lines):
         line = lines[idx]
+        if not line:
+            idx += 1
+            continue
         if not try_parse_category(line):
             if not try_parse_wikipedia_link(line):
                 break
