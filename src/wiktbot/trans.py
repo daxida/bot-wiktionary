@@ -10,9 +10,9 @@ def try_repl_trans(s: str, header: Header) -> str | None:
     return try_repl_with_callback(s, header, try_repl_trans_section)
 
 
-def try_repl_trans_section(section: list[str], header: Header) -> list[str] | None:
+def try_repl_trans_section(section: list[str], _: Header) -> list[str] | None:
     def repl_line(line: str) -> str:
-        m = re.match(r"\*\{\{(\w+)\}\}: (.+)", line)
+        m = re.match(r"\*\{\{(\w+)\}\}: ?(.+)", line)
         if not m:
             return line
         lang = m.group(1)

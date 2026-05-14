@@ -14,7 +14,7 @@ def mktest(raw: str, expected: str) -> None:
     assert expected == received, received
 
 
-def test_repl_trans_base() -> None:
+def test_trans_base() -> None:
     raw = """
 ===={{trans}}==== 
 *{{de}}: [[Lebenslauf]]
@@ -30,7 +30,19 @@ def test_repl_trans_base() -> None:
     mktest(raw, expected)
 
 
-def test_repl_trans_already_correct() -> None:
+def test_trans_no_space() -> None:
+    raw = """
+===={{trans}}====
+*{{en}}:[[sister-in-law]]
+"""
+    expected = """
+===={{trans}}====
+*{{T|en}}: {{t|en|sister-in-law}}
+        """
+    mktest(raw, expected)
+
+
+def test_trans_already_correct() -> None:
     raw = """
 ===={{trans}}====
 *{{en}}: {{t|en|archives}}, {{t|en|archive}}
