@@ -5,7 +5,9 @@ from typing import Literal, get_args
 
 # Duplication is smelly, but there are no runtime alternatives.
 # The distinction is only important because of the extra {{ }} when parsing the header.
-Pos = Literal["noun", "noun-suru", "adverb", "name", "trans", "adj", "verb", "idiom"]
+Pos = Literal[
+    "noun", "noun-suru", "adverb", "name", "trans", "adj", "verb", "idiom", "suffix"
+]
 Header = Literal[
     "和語の漢字表記",
     "noun",
@@ -16,6 +18,7 @@ Header = Literal[
     "adj",
     "verb",
     "idiom",
+    "suffix",
 ]
 POS_CHOICES = get_args(Pos)
 
@@ -177,10 +180,11 @@ def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
         return many_readings, []
 
     # print(f"[WARN] Found {many_readings=} but they were not kana.")
-    if all(is_kana_only(r) or r.startswith("稀:") for r in many_readings):
-        readings = [r for r in many_readings if not r.startswith("稀:")]
-        extra_readings = [r for r in many_readings if r.startswith("稀:")]
-        return readings, extra_readings
+    for prefix in ("稀:", "やや古:"):
+        if all(is_kana_only(r) or r.startswith(prefix) for r in many_readings):
+            readings = [r for r in many_readings if not r.startswith(prefix)]
+            extra_readings = [r for r in many_readings if r.startswith(prefix)]
+            return readings, extra_readings
 
     # print("[WARN] 002 Failed multiple readings. Returning.")
     return None
@@ -209,7 +213,7 @@ def extract_reading_jachar(s: str) -> str | None:
 
 def extract_reading_bold_kanji(s: str) -> str | None:
     """Extract: '''text'''（reading）"""
-    match = re.search(r"(?:'''(.+?)'''|(.+?))[（【](.+?)[）】]", s)
+    match = re.search(r"(?:'''(.+?)'''|(.+?))[（(【](.+?)[）)】]", s)
     return clean(match.group(3)) if match else None
 
 
@@ -273,7 +277,7 @@ def try_split_reading(s: str) -> list[str]:
 
 def repl_reading(s: str) -> str:
     found = False
-    for pos in ("noun", "adverb", "name", "adj", "verb", "idiom"):
+    for pos in ("noun", "adverb", "name", "adj", "verb", "idiom", "suffix"):
         if replacement := try_repl(s, pos):
             found = True
             s = replacement

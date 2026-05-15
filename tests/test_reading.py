@@ -24,6 +24,45 @@ def test_noun_suru() -> None:
     mktest(raw, expected)
 
 
+@pytest.mark.skip(reason="not implemented yet, correct template but wrong args")
+def test_noun_suru_headword_is_kana() -> None:
+    raw = """
+==={{noun}}===
+{{ja-noun-suru}}【がん[[見]]】
+#X
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun-suru|がん[[見]]}}
+#X
+    """
+    mktest(raw, expected)
+
+
+def test_extra_spaces_with_ascii_parens() -> None:
+    raw = """
+{{DEFAULTSORT:かいてき かいてき}}
+
+==日本語==
+[[Category:{{ja}}]]
+
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}]]
+'''[[快]] [[適]]''' (かいてき)
+# とても気持ちが良い状態。
+    """
+    expected = """
+{{DEFAULTSORT:かいてき かいてき}}
+
+==日本語==
+
+==={{noun}}===
+{{ja-noun|かいてき}}
+# とても気持ちが良い状態。
+    """
+    mktest(raw, expected)
+
+
 def test_empty_reading1() -> None:
     raw = """
 ==={{noun}}===
@@ -364,6 +403,7 @@ def test_bold_extra_empty_line1() -> None:
 """
     mktest(raw, expected)
 
+
 def test_bold_extra_empty_line2() -> None:
     raw = """
 =={{ja}}==
@@ -484,9 +524,25 @@ def test_name1() -> None:
     mktest(raw, expected)
 
 
+def test_suffix1() -> None:
+    raw = """
+==={{suffix}}===
+[[Category:{{ja}} {{suffix}}]]
+{{jachar|気|味}}（ぎみ）
+# ある[[傾向]]を帯びていること。
+"""
+    expected = """
+==={{suffix}}===
+{{ja-suffix|ぎみ}}
+# ある[[傾向]]を帯びていること。
+"""
+    mktest(raw, expected)
+
+
 # Follows the final result of:
 # https://ja.wiktionary.org/wiki/%E6%84%9F%E5%8B%95%E8%A9%9E#Japanese
-def test_with_rare_reading() -> None:
+# note: uses ascii parens (like the ja-noun template)
+def test_with_extra_rare_reading() -> None:
     raw = """
 {{Wikipedia|副詞}}
 =={{ja}}==
@@ -504,6 +560,22 @@ def test_with_rare_reading() -> None:
 {{ja-noun|[[ふくし]]}} (稀:そえことば)
 [[Category:{{ja}}_品詞|ふくし]]
 #[[品詞]]の一つ。日本語文法では、[[動詞]]・[[形容詞]]などの[[用言]]
+"""
+    mktest(raw, expected)
+
+
+# note: uses ascii parens (like the ja-noun template)
+def test_with_extra_old_reading() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}} {{noun}}]]
+{{jachar|気|味}}（きみ、やや古:きび）
+#（漢語・原義）[[かおり|香り]]と[[あじ|味]]、[[香気]]と[[風味]]。
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|きみ}} (やや古:きび)
+#（漢語・原義）[[かおり|香り]]と[[あじ|味]]、[[香気]]と[[風味]]。
 """
     mktest(raw, expected)
 
