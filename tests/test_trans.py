@@ -45,10 +45,24 @@ def test_trans_no_space() -> None:
 def test_trans_already_correct() -> None:
     raw = """
 ===={{trans}}====
-*{{en}}: {{t|en|archives}}, {{t|en|archive}}
+*{{T|en}}: {{t|en|archives}}, {{t|en|archive}}
 """
     expected = """
 ===={{trans}}====
-*{{en}}: {{t|en|archives}}, {{t|en|archive}}
+*{{T|en}}: {{t|en|archives}}, {{t|en|archive}}
+        """
+    mktest(raw, expected)
+
+
+def test_trans_both_bold() -> None:
+    raw = """
+===={{trans}}====
+{{top}}
+*[[{{it}}]]: [[prova]]
+    """
+    expected = """
+===={{trans}}====
+{{top}}
+*{{T|it}}: {{t|it|prova}}
         """
     mktest(raw, expected)

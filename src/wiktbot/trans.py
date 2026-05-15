@@ -11,18 +11,25 @@ def try_repl_trans(s: str, header: Header) -> str | None:
 
 
 def try_repl_trans_section(section: list[str], _: Header) -> list[str] | None:
-    def repl_line(line: str) -> str:
-        m = re.match(r"\*\{\{(\w+)\}\}: ?(.+)", line)
-        if not m:
-            return line
-        lang = m.group(1)
-        words = re.findall(r"\[\[(.+?)\]\]", m.group(2))
-        if not words:
-            return line
-        translations = ", ".join(f"{{{{t|{lang}|{w}}}}}" for w in words)
-        return f"*{{{{T|{lang}}}}}: {translations}"
-
     return [repl_line(line) for line in section]
+
+
+def repl_line(line: str) -> str:
+    m = re.match(r"\*\s?(?:\[\[)?\{\{(\w{2})\}\}(?:\]\])?: ?(.+)", line)
+    if not m:
+        return line
+    lang = m.group(1)
+    words = try_extract_words(m.group(2))
+    if not words:
+        return line
+    translations = ", ".join(f"{{{{t|{lang}|{w}}}}}" for w in words)
+    return f"*{{{{T|{lang}}}}}: {translations}"
+
+
+def try_extract_words(s: str) -> list[str]:
+    if bold_words := re.findall(r"\[\[(.+?)\]\]", s):
+        return bold_words
+    return []
 
 
 def repl_trans(s: str) -> str:
