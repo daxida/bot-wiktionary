@@ -65,6 +65,26 @@ def test_noun_suru_headword_is_kana() -> None:
     mktest(raw, expected)
 
 
+# Unchanged since I'm not sure how to deal with suffixes.
+# This is a direct result of is_kana_only logic.
+def test_noun_hyphen_in_reading() -> None:
+    raw = """
+===名詞===
+[[category:日本語 名詞]]
+[[category:日本語 言語名]]
+[[category:{{hi}}|*]]
+'''ヒンディー語'''（-ゴ）
+"""
+    expected = """
+===名詞===
+[[category:日本語 名詞]]
+[[category:日本語 言語名]]
+[[category:{{hi}}|*]]
+'''ヒンディー語'''（-ゴ）
+"""
+    mktest(raw, expected)
+
+
 def test_extra_spaces_with_ascii_parens() -> None:
     raw = """
 {{DEFAULTSORT:かいてき かいてき}}

@@ -236,6 +236,9 @@ def is_kana_only(s: str) -> bool:
     if not s:
         return False
     allowed_extras = "[]-"
+    # Don't allow hyphens at edges due to prefixes/suffixes
+    if s[0] == "-" or s[-1] == "-":
+        return False
     return all(
         "\u3040" <= c <= "\u309f"  # hiragana
         or "\u30a0" <= c <= "\u30ff"  # katakana
