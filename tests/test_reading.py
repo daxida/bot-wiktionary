@@ -10,6 +10,32 @@ def mktest(raw: str, expected: str) -> None:
     assert expected == received, received
 
 
+def test_noun() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}]]
+{{jachar|思|慮}}（[[しりょ]]）
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[しりょ]]}}
+"""
+    mktest(raw, expected)
+
+
+def test_noun_raw_header() -> None:
+    raw = """
+===名詞===
+[[Category:{{ja}}_{{noun}}]]
+{{jachar|思|慮}}（[[しりょ]]）
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[しりょ]]}}
+"""
+    mktest(raw, expected)
+
+
 def test_noun_suru() -> None:
     raw = """
 ==={{noun}}===
@@ -635,8 +661,6 @@ def test_verb() -> None:
     mktest(raw, expected)
 
 
-# Also fix the header (成句 instead of idiom)
-@pytest.mark.skip(reason="not implemented yet, needs fixing the header")
 def test_idiom1() -> None:
     raw = """
 ===成句===

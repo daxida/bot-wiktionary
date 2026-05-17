@@ -3,13 +3,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal, get_args
 
-# Duplication is smelly, but there are no runtime alternatives.
-# The distinction is only important because of the extra {{ }} when parsing the header.
 Pos = Literal[
-    "noun", "noun-suru", "adverb", "name", "trans", "adj", "verb", "idiom", "suffix"
-]
-Header = Literal[
-    "和語の漢字表記",
+    "wago",
     "noun",
     "noun-suru",
     "adverb",
@@ -18,7 +13,10 @@ Header = Literal[
     "adj",
     "verb",
     "idiom",
+    "prefix",
     "suffix",
+    # This header is level 4 (====), yet this works?
+    "trans",
 ]
 POS_CHOICES = get_args(Pos)
 
@@ -26,27 +24,55 @@ POS_CHOICES = get_args(Pos)
 @dataclass
 class Prelude:
     idx: int
-    new_header: Header | None
+    new_pos: Pos | None
     categories: list[str]
     wikipedia: list[str]
 
 
-def template_name(header: Header) -> str:
-    match header:
+def template_name(pos: Pos) -> str:
+    match pos:
         case "adverb":
             return "adv"
         case _:
-            return header
+            return pos
+
+
+# https://ja.wiktionary.org/wiki/Wiktionary:テンプレートの一覧#品詞表記
+def header(pos: Pos) -> str:
+    match pos:
+        case "wago":
+            return "和語の漢字表記"
+        case "noun":
+            return "名詞"
+        case "adverb":
+            return "副詞"
+        case "name":
+            return "固有名詞"
+        case "adj":
+            return "形容詞"
+        case "verb":
+            return "動詞"
+        case "idiom":
+            return "成句"
+        case "prefix":
+            return "接頭辞"
+        case "suffix":
+            return "接尾辞"
+        case "trans":
+            return "翻訳"
+        # This can't be found as a header
+        case "noun-suru":
+            return "noun-suru"
 
 
 def try_repl_with_callback(
     s: str,
-    header: Header,
-    callback: Callable[[list[str], Header], list[str] | None],
+    pos: Pos,
+    callback: Callable[[list[str], Pos], list[str] | None],
 ) -> str | None:
     lines = s.splitlines()
 
-    idxs = extract_headers(lines, header)
+    idxs = extract_and_fix_headers(lines, pos)
     if not idxs:
         return None
 
@@ -56,7 +82,7 @@ def try_repl_with_callback(
 
     for fr, to in sections:
         section = lines[fr:to]
-        replaced = callback(section, header)
+        replaced = callback(section, pos)
         if replaced is None:
             result_lines.extend(section)
         else:
@@ -69,18 +95,18 @@ def try_repl_with_callback(
     return "\n".join(result_lines)
 
 
-def try_repl(s: str, header: Pos) -> str | None:
-    return try_repl_with_callback(s, header, try_repl_section)
+def try_repl(s: str, pos: Pos) -> str | None:
+    return try_repl_with_callback(s, pos, try_repl_section)
 
 
-def try_repl_section(section: list[str], header: Header) -> list[str] | None:
-    prelude = extract_prelude(section, header)
-    # print(f"Found {prelude=} {section=}")
+def try_repl_section(section: list[str], pos: Pos) -> list[str] | None:
+    prelude = extract_prelude(section, pos)
+    # print(f"Found:\n* {prelude=}\n* {section=}\n* {pos=}")
     if prelude.idx == 1:
         return None
 
-    if prelude.new_header is not None:
-        header = prelude.new_header
+    if prelude.new_pos is not None:
+        pos = prelude.new_pos
 
     reading = None
     for label, extract_fn in (
@@ -99,9 +125,7 @@ def try_repl_section(section: list[str], header: Header) -> list[str] | None:
     readings, extra_readings = result
 
     extra_readings_str = "" if not extra_readings else f" ({', '.join(extra_readings)})"
-    to_add = (
-        f"{{{{ja-{template_name(header)}|{'|'.join(readings)}}}}}{extra_readings_str}"
-    )
+    to_add = f"{{{{ja-{template_name(pos)}|{'|'.join(readings)}}}}}{extra_readings_str}"
 
     return [
         *section[:1],
@@ -112,8 +136,26 @@ def try_repl_section(section: list[str], header: Header) -> list[str] | None:
     ]
 
 
-def extract_headers(lines: list[str], header: Header) -> list[int]:
-    return [i for i, line in enumerate(lines) if try_parse_header(line, header)]
+def extract_and_fix_headers(lines: list[str], pos: Pos) -> list[int]:
+    """Return a list of indexes where there are headers.
+
+    Raw Japanese headers (e.g. ===名詞===) are rewritten in-place to their
+    template form (e.g. ==={{noun}}===).
+    """
+    idxs = []
+    for i, line in enumerate(lines):
+        # Template form
+        # There can be readings after the pos: ==={{noun}}：ぎぶつ===
+        # There can be readings spaces between: === {{noun}} ===
+        if re.search(rf"===\s*\{{\{{{re.escape(pos)}\}}\}}[^={{}}]*===", line):
+            idxs.append(i)
+        # Raw Japanese header
+        elif re.search(rf"==={re.escape(header(pos))}===", line):
+            idxs.append(i)
+            lines[i] = re.sub(
+                rf"==={re.escape(header(pos))}===", f"==={{{{{pos}}}}}===", line
+            )
+    return idxs
 
 
 SURU_VERB_CATEGORIES = [
@@ -122,7 +164,7 @@ SURU_VERB_CATEGORIES = [
 ]
 
 
-def extract_prelude(lines: list[str], header: Header) -> Prelude:
+def extract_prelude(lines: list[str], pos: Pos) -> Prelude:
     """Consume the prelude, that is, the lines between the header, and the line
     that contains the reading.
 
@@ -133,7 +175,7 @@ def extract_prelude(lines: list[str], header: Header) -> Prelude:
     idx = 1
     categories: list[str] = []
     wikipedia: list[str] = []
-    new_header: Pos | None = None
+    new_pos: Pos | None = None
 
     while idx < len(lines):
         line = lines[idx]
@@ -147,9 +189,9 @@ def extract_prelude(lines: list[str], header: Header) -> Prelude:
                 wikipedia.append(line)
                 idx += 1
                 continue
-        if header == "noun" and line in SURU_VERB_CATEGORIES:
-            new_header = "noun-suru"
-        if not is_category_removable(header, line):
+        if pos == "noun" and line in SURU_VERB_CATEGORIES:
+            new_pos = "noun-suru"
+        if not is_category_removable(pos, line):
             categories.append(line)
         idx += 1
 
@@ -159,7 +201,7 @@ def extract_prelude(lines: list[str], header: Header) -> Prelude:
 
     return Prelude(
         idx=idx,
-        new_header=new_header,
+        new_pos=new_pos,
         categories=categories,
         wikipedia=wikipedia,
     )
@@ -221,18 +263,6 @@ def clean(s: str) -> str:
     return s.strip("'")
 
 
-def try_parse_header(s: str, header: Header) -> bool:
-    if header in POS_CHOICES:
-        # There can be readings after the pos: ==={{noun}}：ぎぶつ===
-        # There can be readings spaces between: === {{noun}} ===
-        return (
-            re.search(rf"===\s*\{{\{{{re.escape(header)}\}}\}}[^={{}}]*===", s)
-            is not None
-        )
-    else:
-        return re.search(rf"==={re.escape(header)}===", s) is not None
-
-
 def try_parse_wikipedia_link(s: str) -> bool:
     return re.search(r"\{\{wikipedia\|[^}]*\}\}", s) is not None
 
@@ -242,7 +272,7 @@ def try_parse_category(s: str, cat: str = "") -> bool:
     return re.search(rf"\[\[(?:[Cc]ategory|カテゴリ):{inner}\]\]", s) is not None
 
 
-def is_category_removable(pos: Header, cat: str) -> bool:
+def is_category_removable(pos: Pos, cat: str) -> bool:
     return (
         re.search(rf"\[\[(?:[Cc]ategory|カテゴリ):{{{{ja}}}}[ _]{{{{{pos}}}}}", cat)
         is not None
@@ -277,7 +307,7 @@ def try_split_reading(s: str) -> list[str]:
 
 def repl_reading(s: str) -> str:
     found = False
-    for pos in ("noun", "adverb", "name", "adj", "verb", "idiom", "suffix"):
+    for pos in ("noun", "adverb", "name", "adj", "verb", "idiom", "prefix", "suffix"):
         if replacement := try_repl(s, pos):
             found = True
             s = replacement

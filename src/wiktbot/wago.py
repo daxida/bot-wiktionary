@@ -17,19 +17,19 @@ Method:
 import re
 
 from wiktbot.reading import (
-    Header,
+    Pos,
     extract_prelude,
     try_repl_with_callback,
     is_category_ja,
 )
 
 
-def try_repl_wago(s: str, header: Header) -> str | None:
-    return try_repl_with_callback(s, header, try_repl_wago_section)
+def try_repl_wago(s: str, pos: Pos) -> str | None:
+    return try_repl_with_callback(s, pos, try_repl_wago_section)
 
 
-def try_repl_wago_section(section: list[str], header: Header) -> list[str] | None:
-    prelude = extract_prelude(section, header)  # type: ignore
+def try_repl_wago_section(section: list[str], pos: Pos) -> list[str] | None:
+    prelude = extract_prelude(section, pos)  # type: ignore
     if prelude.idx == 1:
         # This is ok but remember that we skip one line!
         print("Didn't find prelude")
@@ -75,8 +75,8 @@ def extract_reading_from_reference(s: str) -> str | None:
 
 def repl_wago(s: str) -> str:
     found = False
-    for header in ("和語の漢字表記", "noun"):
-        if replacement := try_repl_wago(s, header):
+    for pos in ("wago", "noun"):
+        if replacement := try_repl_wago(s, pos):
             found = True
             s = replacement
 

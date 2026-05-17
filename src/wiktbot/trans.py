@@ -1,16 +1,16 @@
 import re
 
 from wiktbot.reading import (
-    Header,
+    Pos,
     try_repl_with_callback,
 )
 
 
-def try_repl_trans(s: str, header: Header) -> str | None:
-    return try_repl_with_callback(s, header, try_repl_trans_section)
+def try_repl_trans(s: str, pos: Pos) -> str | None:
+    return try_repl_with_callback(s, pos, try_repl_trans_section)
 
 
-def try_repl_trans_section(section: list[str], _: Header) -> list[str] | None:
+def try_repl_trans_section(section: list[str], _: Pos) -> list[str] | None:
     return [repl_line(line) for line in section]
 
 
@@ -33,6 +33,6 @@ def try_extract_words(s: str) -> list[str]:
 
 
 def repl_trans(s: str) -> str:
-    for header in ("trans",):
-        s = try_repl_trans(s, header) or s
+    for pos in ("trans",):
+        s = try_repl_trans(s, pos) or s
     return s
