@@ -719,6 +719,24 @@ def test_idiom2() -> None:
     mktest(raw, expected)
 
 
+def test_idiom3() -> None:
+    raw = """
+=={{ja}}==
+[[Category:日本語]]
+=== {{idiom}} ===
+[[Category:{{ja}} {{idiom}}]]
+'''[[合]][[縁]][[奇]][[縁]]'''（あいえんきえん）
+# [[ひと|人]]と[[ひと|人]]の[[きがあう|気が合う]]のも、[[あう|合わ]]
+"""
+    expected = """
+=={{ja}}==
+=== {{idiom}} ===
+{{ja-idiom|あいえんきえん}}
+# [[ひと|人]]と[[ひと|人]]の[[きがあう|気が合う]]のも、[[あう|合わ]]
+"""
+    mktest(raw, expected)
+
+
 # WARN: Do not change anything.
 #
 # @pytest.mark.skip(reason="not implemented yet, how to deal with this?")

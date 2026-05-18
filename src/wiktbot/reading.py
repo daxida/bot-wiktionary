@@ -277,20 +277,22 @@ def try_parse_category(s: str, cat: str = "") -> bool:
 
 def is_category_removable(pos: Pos, cat: str) -> bool:
     return (
-        re.search(rf"\[\[(?:[Cc]ategory|カテゴリ):{{{{ja}}}}[ _]{{{{{pos}}}}}", cat)
+        re.search(
+            rf"\[\[(?:[Cc]ategory|カテゴリ):(?:日本語|{{{{ja}}}})[ _]{{{{{pos}}}}}", cat
+        )
         is not None
     )
 
 
 def is_category_ja(line: str) -> bool:
-    # Assumes line is in lowercase
     # * [[カテゴリ:日本語]]
     # * [[カテゴリ:{{ja}}]]
     # * [[Category:{{ja}}]]
+    # * [[Category:日本語]]
     # * [[Category:{{ja}}|れんしよう れんじょう]]
     return (
         re.search(
-            r"\[\[(?:category:\{\{ja\}\}|カテゴリ:日本語|カテゴリ:\{\{ja\}\})(?:\|[^\]]+)?\]\]",
+            r"\[\[(?:[Cc]ategory|カテゴリ):(?:日本語|\{\{ja\}\})(?:\|[^\]]+)?\]\]",
             line,
         )
         is not None
@@ -319,7 +321,7 @@ def repl_reading(s: str) -> str:
     # anywhere on the wikitext (according to @Naggy Nagumo)
     if found:
         s = "\n".join(
-            line for line in s.splitlines() if not is_category_ja(line.lower().strip())
+            line for line in s.splitlines() if not is_category_ja(line.strip())
         )
 
     return s

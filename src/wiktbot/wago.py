@@ -84,7 +84,7 @@ def repl_wago(s: str) -> str:
     # anywhere on the wikitext (according to @Naggy Nagumo)
     if found:
         s = "\n".join(
-            line for line in s.splitlines() if not is_category_ja(line.lower().strip())
+            line for line in s.splitlines() if not is_category_ja(line.strip())
         )
 
     return s
