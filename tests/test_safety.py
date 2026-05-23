@@ -4,7 +4,7 @@ from wiktbot.main import repl
 
 CORRECT_PAGES = [
     """
-=={{ja}}==
+=={{L|ja}}==
 {{kana-DEFAULTSORT}}
 ==={{noun}}===
 {{ja-noun|[[買い手]]|買手}}
@@ -25,4 +25,5 @@ CORRECT_PAGES = [
 
 def test_correct_page_remains_the_same() -> None:
     for page in CORRECT_PAGES:
+        page = page.strip()
         assert repl(page) == page
