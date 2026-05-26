@@ -36,7 +36,7 @@ def test_noun_raw_header() -> None:
     mktest(raw, expected)
 
 
-def test_noun_suru() -> None:
+def test_noun_suru1() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}}_{{noun}}]]
@@ -46,6 +46,20 @@ def test_noun_suru() -> None:
     expected = """
 ==={{noun}}===
 {{ja-noun-suru|[[しりょ]]}}
+"""
+    mktest(raw, expected)
+
+
+def test_noun_suru2() -> None:
+    raw = """
+=== {{noun}} ===
+[[カテゴリ:{{ja}}_{{noun}}|まんそく]]
+[[カテゴリ:{{ja}}_{{noun}}_サ変動詞|まんそく]]
+'''[[満]] [[足]]'''（[[まんぞく]]）
+"""
+    expected = """
+=== {{noun}} ===
+{{ja-noun-suru|[[まんぞく]]}}
 """
     mktest(raw, expected)
 

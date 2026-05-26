@@ -159,12 +159,6 @@ def extract_and_fix_headers(lines: list[str], pos: Pos) -> list[int]:
     return idxs
 
 
-SURU_VERB_CATEGORIES = [
-    "[[Category:{{ja}}_{{noun}}_サ変動詞]]",
-    "[[Category:{{ja}} {{noun}}_サ変動詞]]",
-]
-
-
 def extract_prelude(lines: list[str], pos: Pos) -> Prelude:
     """Consume the prelude, that is, the lines between the header, and the line
     that contains the reading.
@@ -190,7 +184,7 @@ def extract_prelude(lines: list[str], pos: Pos) -> Prelude:
                 wikipedia.append(line)
                 idx += 1
                 continue
-        if pos == "noun" and line in SURU_VERB_CATEGORIES:
+        if pos == "noun" and is_category_suru(line):
             new_pos = "noun-suru"
         if not is_category_removable(pos, line):
             categories.append(line)
@@ -283,6 +277,17 @@ def try_parse_wikipedia_link(s: str) -> bool:
 def try_parse_category(s: str, cat: str = "") -> bool:
     inner = cat if cat else r"[^\]]+"
     return re.search(rf"\[\[(?:[Cc]ategory|カテゴリ):{inner}\]\]", s) is not None
+
+
+def is_category_suru(line: str) -> bool:
+    # * [[カテゴリ:{{ja}}_{{noun}}_サ変動詞|まんそく]]
+    return (
+        re.search(
+            r"\[\[(?:[Cc]ategory|カテゴリ):(?:日本語|\{\{ja\}\})[ _](?:名詞|\{\{noun\}\})[ _]サ変動詞(?:\|[^\]]+)?\]\]",
+            line,
+        )
+        is not None
+    )
 
 
 def is_category_removable(pos: Pos, cat: str) -> bool:
