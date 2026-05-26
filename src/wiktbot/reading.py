@@ -15,6 +15,7 @@ Pos = Literal[
     "idiom",
     "prefix",
     "suffix",
+    "adnominal",
     # This header is level 4 (====), yet this works?
     "trans",
 ]
@@ -58,6 +59,8 @@ def header(pos: Pos) -> str:
             return "接頭辞"
         case "suffix":
             return "接尾辞"
+        case "adnominal":
+            return "連体詞"
         case "trans":
             return "翻訳"
         # This can't be found as a header
@@ -102,9 +105,6 @@ def try_repl(s: str, pos: Pos) -> str | None:
 def try_repl_section(section: list[str], pos: Pos) -> list[str] | None:
     prelude = extract_prelude(section, pos)
     # print(f"Found:\n* {prelude=}\n* {section=}\n* {pos=}")
-    if prelude.idx == 1:
-        return None
-
     if prelude.new_pos is not None:
         pos = prelude.new_pos
 
@@ -112,6 +112,7 @@ def try_repl_section(section: list[str], pos: Pos) -> list[str] | None:
     for label, extract_fn in (
         ("bold", extract_reading_bold_kanji),
         ("jachar", extract_reading_jachar),
+        ("head", extract_reading_head),
     ):
         if reading := extract_fn(section[prelude.idx]):
             # print(f"Found {label} {reading=}")
@@ -247,19 +248,28 @@ def is_kana_only(s: str) -> bool:
     )
 
 
+def extract_reading_bold_kanji(s: str) -> str | None:
+    """Extract: '''text'''（reading）"""
+    match = re.search(r"(?:'''(.+?)'''|(.+?))[（(【](.+?)[）)】]", s)
+    return clean(match.group(3)) if match else None
+
+
 def extract_reading_jachar(s: str) -> str | None:
     # {{jachar|X|Y}} supports args
     # {{jachars}} with s, is supposed to be written without...
     # ...but one can see the WRONG version too: {{jachars|アフリカ}}
     # so let's just reason as if {{jachars}} could also take args
     match = re.search(r"{{jachars?(?:\|[^}]*)?}}\s*[（(](.+?)[）)]", s)
-    return match.group(1) if match else None
+    return clean(match.group(1)) if match else None
 
 
-def extract_reading_bold_kanji(s: str) -> str | None:
-    """Extract: '''text'''（reading）"""
-    match = re.search(r"(?:'''(.+?)'''|(.+?))[（(【](.+?)[）)】]", s)
-    return clean(match.group(3)) if match else None
+def extract_reading_head(s: str) -> str | None:
+    """Extract reading from: {{head|ja...}}（reading）
+
+    Note that there can be nested {{templates}} in ...
+    """
+    match = re.search(r"\{\{head\|ja.*\}\}\s*[（(](.+?)[）)]", s)
+    return clean(match.group(1)) if match else None
 
 
 def clean(s: str) -> str:
@@ -315,7 +325,17 @@ def try_split_reading(s: str) -> list[str]:
 
 def repl_reading(s: str) -> str:
     found = False
-    for pos in ("noun", "adverb", "name", "adj", "verb", "idiom", "prefix", "suffix"):
+    for pos in (
+        "noun",
+        "adverb",
+        "name",
+        "adj",
+        "verb",
+        "idiom",
+        "prefix",
+        "suffix",
+        "adnominal",
+    ):
         if replacement := try_repl(s, pos):
             found = True
             s = replacement

@@ -781,8 +781,24 @@ def test_noun_adjnoun() -> None:
     mktest(raw, expected)
 
 
-@pytest.mark.skip(reason="not implemented yet, cursed template")
-def test_cursed() -> None:
+def test_is_category_removable() -> None:
+    raw = """
+==={{noun}}===
+[[Category:日本語_名詞]]
+[[Category:{{ja}} 生理学|*]]
+{{jachar|生|理|学}}（[[せいりがく]]）
+#X
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[せいりがく]]}}
+[[Category:{{ja}} 生理学|*]]
+#X
+"""
+    mktest(raw, expected)
+
+
+def test_head_template() -> None:
     raw = """
 ==={{noun}}===
 {{head|ja|noun|head={{jachars}}}}（[[あいはん]]）
@@ -798,18 +814,15 @@ def test_cursed() -> None:
     mktest(raw, expected)
 
 
-def test_is_category_removable() -> None:
+def test_adnominal() -> None:
     raw = """
-==={{noun}}===
-[[Category:日本語_名詞]]
-[[Category:{{ja}} 生理学|*]]
-{{jachar|生|理|学}}（[[せいりがく]]）
-#X
+===連体詞===
+{{head|ja|連体詞}}（しゅたる）
+# [[主要]]な。[[おも|主]]な。
 """
     expected = """
-==={{noun}}===
-{{ja-noun|[[せいりがく]]}}
-[[Category:{{ja}} 生理学|*]]
-#X
+==={{adnominal}}===
+{{ja-adnominal|しゅたる}}
+# [[主要]]な。[[おも|主]]な。
 """
     mktest(raw, expected)
