@@ -276,9 +276,12 @@ def try_parse_category(s: str, cat: str = "") -> bool:
 
 
 def is_category_removable(pos: Pos, cat: str) -> bool:
+    # * [[Category:{{ja}}_{{noun}}]]
+    # * [[Category:日本語_名詞]]
     return (
         re.search(
-            rf"\[\[(?:[Cc]ategory|カテゴリ):(?:日本語|{{{{ja}}}})[ _]{{{{{pos}}}}}", cat
+            rf"\[\[(?:[Cc]ategory|カテゴリ):(?:日本語|{{{{ja}}}})[ _](?:{{{{{pos}}}}}|{header(pos)})",
+            cat,
         )
         is not None
     )

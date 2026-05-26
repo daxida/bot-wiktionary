@@ -796,3 +796,20 @@ def test_cursed() -> None:
 #[[連帯]]して[[押印]]すること。
 """
     mktest(raw, expected)
+
+
+def test_is_category_removable() -> None:
+    raw = """
+==={{noun}}===
+[[Category:日本語_名詞]]
+[[Category:{{ja}} 生理学|*]]
+{{jachar|生|理|学}}（[[せいりがく]]）
+#X
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[せいりがく]]}}
+[[Category:{{ja}} 生理学|*]]
+#X
+"""
+    mktest(raw, expected)
