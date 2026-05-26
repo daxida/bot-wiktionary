@@ -6,7 +6,7 @@
 import re
 from typing import Literal, get_args
 
-Lang = Literal["ja", "zh", "ko", "vi"]
+Lang = Literal["ja", "zh", "ko", "vi", "ojp"]
 
 
 def header(lang: Lang) -> str:
@@ -19,6 +19,8 @@ def header(lang: Lang) -> str:
             return "朝鮮語"
         case "vi":
             return "ベトナム語"
+        case "ojp":
+            return "古典日本語"
 
 
 # See reading.py::extract_and_fix_headers
