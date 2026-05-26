@@ -16,6 +16,7 @@ Pos = Literal[
     "prefix",
     "suffix",
     "adnominal",
+    "proverb",
     # This header is level 4 (====), yet this works?
     "trans",
 ]
@@ -61,6 +62,8 @@ def header(pos: Pos) -> str:
             return "接尾辞"
         case "adnominal":
             return "連体詞"
+        case "proverb":
+            return "ことわざ"
         case "trans":
             return "翻訳"
         # This can't be found as a header
@@ -151,11 +154,11 @@ def extract_and_fix_headers(lines: list[str], pos: Pos) -> list[int]:
         if re.search(rf"===\s*\{{\{{{re.escape(pos)}\}}\}}[^={{}}]*===", line):
             idxs.append(i)
         # Raw Japanese header
-        elif re.search(rf"==={re.escape(header(pos))}===", line):
-            idxs.append(i)
-            lines[i] = re.sub(
-                rf"==={re.escape(header(pos))}===", f"==={{{{{pos}}}}}===", line
-            )
+        else:
+            header_re = re.compile(rf"===\s*{re.escape(header(pos))}\s*===")
+            if header_re.search(line):
+                idxs.append(i)
+                lines[i] = header_re.sub(f"==={{{{{pos}}}}}===", line)
     return idxs
 
 
@@ -281,6 +284,7 @@ def try_parse_category(s: str, cat: str = "") -> bool:
 
 def is_category_suru(line: str) -> bool:
     # * [[カテゴリ:{{ja}}_{{noun}}_サ変動詞|まんそく]]
+    # * [[Category:{{ja}} {{noun}} サ変動詞|しんこう]]
     return (
         re.search(
             r"\[\[(?:[Cc]ategory|カテゴリ):(?:日本語|\{\{ja\}\})[ _](?:名詞|\{\{noun\}\})[ _]サ変動詞(?:\|[^\]]+)?\]\]",
@@ -340,6 +344,7 @@ def repl_reading(s: str) -> str:
         "prefix",
         "suffix",
         "adnominal",
+        # "proverb", # ja-proverb doesn't exist (but should)
     ):
         if replacement := try_repl(s, pos):
             found = True

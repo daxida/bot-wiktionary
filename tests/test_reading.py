@@ -64,6 +64,20 @@ def test_noun_suru2() -> None:
     mktest(raw, expected)
 
 
+def test_noun_suru3() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}} {{noun}}|しんこう]]
+[[Category:{{ja}} {{noun}} サ変動詞|しんこう]]
+'''[[信]] [[仰]]'''（[[しんこう]]）
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun-suru|[[しんこう]]}}
+"""
+    mktest(raw, expected)
+
+
 @pytest.mark.skip(reason="not implemented yet, correct template but wrong args")
 def test_noun_suru_headword_is_kana() -> None:
     raw = """
@@ -838,5 +852,21 @@ def test_adnominal() -> None:
 ==={{adnominal}}===
 {{ja-adnominal|しゅたる}}
 # [[主要]]な。[[おも|主]]な。
+"""
+    mktest(raw, expected)
+
+
+@pytest.mark.skip(reason="ja-proverb doesn't exist (but should)")
+def test_proverb() -> None:
+    raw = """
+=== ことわざ ===
+[[Category:{{ja}}_ことわざ]]
+'''[[雑魚]]の[[魚]]交じり'''（ザコのトトマじり）
+#X
+"""
+    expected = """
+==={{proverb}}===
+{{ja-proverb|ザコのトトマじり}}
+#X
 """
     mktest(raw, expected)
