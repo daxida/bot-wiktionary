@@ -30,12 +30,7 @@ def try_repl_wago(s: str, pos: Pos) -> str | None:
 
 def try_repl_wago_section(section: list[str], pos: Pos) -> list[str] | None:
     prelude = extract_prelude(section, pos)  # type: ignore
-    if prelude.idx == 1:
-        # This is ok but remember that we skip one line!
-        print("Didn't find prelude")
-    else:
-        print(f"Found {prelude=}")
-    print(f"Line after prelude {section[prelude.idx]}")
+    # print(f"Line after prelude {section[prelude.idx]}")
 
     # Skip line (maybe we can narrow this to be more precise)
     # ex. of lines that we skip
