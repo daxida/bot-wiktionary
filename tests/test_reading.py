@@ -78,8 +78,22 @@ def test_noun_suru3() -> None:
     mktest(raw, expected)
 
 
+def test_noun_suru_headword_is_kana1() -> None:
+    raw = """
+==={{noun}}===
+{{ja-noun}}【がん[[見]]】
+#X
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|がん[[見]]}}
+#X
+    """
+    mktest(raw, expected)
+
+
 @pytest.mark.skip(reason="not implemented yet, correct template but wrong args")
-def test_noun_suru_headword_is_kana() -> None:
+def test_noun_suru_headword_is_kana2() -> None:
     raw = """
 ==={{noun}}===
 {{ja-noun-suru}}【がん[[見]]】
@@ -867,6 +881,20 @@ def test_proverb() -> None:
     expected = """
 ==={{proverb}}===
 {{ja-proverb|ザコのトトマじり}}
+#X
+"""
+    mktest(raw, expected)
+
+
+def test_reading_is_kanji() -> None:
+    raw = """
+==={{noun}}===
+{{ja-noun}}【[[殺]]し[[屋]]】
+#X
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[殺]]し[[屋]]}}
 #X
 """
     mktest(raw, expected)

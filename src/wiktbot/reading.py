@@ -111,15 +111,7 @@ def try_repl_section(section: list[str], pos: Pos) -> list[str] | None:
     if prelude.new_pos is not None:
         pos = prelude.new_pos
 
-    reading = None
-    for label, extract_fn in (
-        ("bold", extract_reading_bold_kanji),
-        ("jachar", extract_reading_jachar),
-        ("head", extract_reading_head),
-    ):
-        if reading := extract_fn(section[prelude.idx]):
-            # print(f"Found {label} {reading=}")
-            break
+    reading = extract_reading(section[prelude.idx])
     if not reading:
         return None
 
@@ -207,6 +199,15 @@ def extract_prelude(lines: list[str], pos: Pos) -> Prelude:
 
 def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
     """Returns (readings, extra_readings) or None if parsing fails."""
+
+    # Kanji transliterations of kana-only pages (e.g. ころしや: [[殺]]し[[屋]]) can
+    # appear wrapped in 【】 when editors don't use the proper template. Since we lack
+    # page title context, we can't verify this, so we just pass it through.
+    if reading.startswith("【") and reading.endswith("】"):
+        clean_reading = reading[1:-1]
+        if is_japanese(clean_reading):
+            return [clean_reading], []
+
     if is_kana_only(reading):
         return [reading], []
 
@@ -230,34 +231,63 @@ def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
     return None
 
 
+ALLOWED_READING_EXTRA_CHARS = "[]-"
+"""Brackets are used for wikilinks, hyphens for mixed scripts transliterations."""
+
+
 def is_kana_only(s: str) -> bool:
     if not s:
         return False
-    allowed_extras = "[]-"
     # Don't allow hyphens at edges due to prefixes/suffixes
     if s[0] == "-" or s[-1] == "-":
         return False
     return all(
         "\u3040" <= c <= "\u309f"  # hiragana
         or "\u30a0" <= c <= "\u30ff"  # katakana
-        or c in allowed_extras
+        or c in ALLOWED_READING_EXTRA_CHARS
         for c in s
     )
 
 
-def extract_reading_bold_kanji(s: str) -> str | None:
-    """Extract: '''text'''（reading）"""
-    match = re.search(r"(?:'''(.+?)'''|(.+?))[（(【](.+?)[）)】]", s)
-    return clean(match.group(3)) if match else None
+def is_japanese(s: str) -> bool:
+    if not s:
+        return False
+    return all(
+        "\u3040" <= c <= "\u309f"  # hiragana
+        or "\u30a0" <= c <= "\u30ff"  # katakana
+        or "\u4e00" <= c <= "\u9fff"  # CJK unified ideographs (kanji)
+        or "\u3400" <= c <= "\u4dbf"  # CJK extension A
+        or "\uf900" <= c <= "\ufaff"  # CJK compatibility ideographs
+        or c in ALLOWED_READING_EXTRA_CHARS
+        for c in s
+    )
+
+
+def extract_reading(s: str) -> str | None:
+    for _, extract_fn in (
+        ("bold", extract_reading_bold),
+        ("jachar", extract_reading_jachar),
+        ("head", extract_reading_head),
+    ):
+        if reading := extract_fn(s):
+            # print(f"Found {_} {reading=}")
+            return reading
+    return None
+
+
+def extract_reading_bold(s: str) -> str | None:
+    """Extract reading from: '''text'''（reading）"""
+    match = re.search(r"(?:'''.+?'''|.+?)([（(【])(.+?)([）)】])", s)
+    return postprocess_reading(match) if match else None
 
 
 def extract_reading_jachar(s: str) -> str | None:
+    """Extract reading from: {{jachar}}（reading） or {{jachars}}（reading）"""
     # {{jachar|X|Y}} supports args
-    # {{jachars}} with s, is supposed to be written without...
-    # ...but one can see the WRONG version too: {{jachars|アフリカ}}
-    # so let's just reason as if {{jachars}} could also take args
-    match = re.search(r"{{jachars?(?:\|[^}]*)?}}\s*[（(](.+?)[）)]", s)
-    return clean(match.group(1)) if match else None
+    # {{jachars}} is supposed to be written without args, but faulty pages
+    # may use {{jachars|アフリカ}}, so args are accepted for both forms.
+    match = re.search(r"{{jachars?(?:\|[^}]*)?}}\s*([（(])(.+?)([）)])", s)
+    return postprocess_reading(match) if match else None
 
 
 def extract_reading_head(s: str) -> str | None:
@@ -265,8 +295,32 @@ def extract_reading_head(s: str) -> str | None:
 
     Note that there can be nested {{templates}} in ...
     """
-    match = re.search(r"\{\{head\|ja.*\}\}\s*[（(](.+?)[）)]", s)
-    return clean(match.group(1)) if match else None
+    match = re.search(r"\{\{head\|ja.*\}\}\s*([（(])(.+?)([）)])", s)
+    return postprocess_reading(match) if match else None
+
+
+def postprocess_reading(match: re.Match[str]) -> str:
+    """Process a regex match containing a bracketed reading.
+
+    Handles two cases:
+    - （）or （） brackets: return the inner content as-is.
+    - 【】 brackets
+      - re-wrap with 【】 so that parse_readings can detect and handle kanji
+        transcriptions of kana-only pages (e.g. 【殺し屋】).
+      - However, if the inner content is kana-only or contains separators, it is
+        a faulty page where 【】 was used instead of （）: return plain inner
+        content so it is treated as a normal reading.
+    """
+    open_b, inner, close_b = match.group(1), clean(match.group(2)), match.group(3)
+    if (
+        open_b == "【"
+        and close_b == "】"
+        and is_japanese(inner)
+        and not is_kana_only(inner)
+        and not any(sep in inner for sep in SEPARATORS)
+    ):
+        return f"【{inner}】"
+    return inner
 
 
 def clean(s: str) -> str:
