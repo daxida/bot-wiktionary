@@ -108,7 +108,7 @@ def test_noun_suru_headword_is_kana2() -> None:
 
 # Unchanged since I'm not sure how to deal with suffixes.
 # This is a direct result of is_kana_only logic.
-def test_noun_hyphen_in_reading() -> None:
+def test_bold_noun_hyphen_in_reading() -> None:
     raw = """
 ===名詞===
 [[category:日本語 名詞]]
@@ -126,10 +126,8 @@ def test_noun_hyphen_in_reading() -> None:
     mktest(raw, expected)
 
 
-def test_extra_spaces_with_ascii_parens() -> None:
+def test_bold_extra_spaces_with_ascii_parens() -> None:
     raw = """
-{{DEFAULTSORT:かいてき かいてき}}
-
 ==日本語==
 [[Category:{{ja}}]]
 
@@ -139,8 +137,6 @@ def test_extra_spaces_with_ascii_parens() -> None:
 # とても気持ちが良い状態。
     """
     expected = """
-{{DEFAULTSORT:かいてき かいてき}}
-
 ==日本語==
 
 ==={{noun}}===
@@ -541,7 +537,7 @@ def test_bold_with_inner_category() -> None:
     mktest(raw, expected)
 
 
-def test_bold1() -> None:
+def test_bold_logic_but_no_bold() -> None:
     raw = """
 ==={{noun}}===
 [[Category:{{ja}} {{noun}}]]
@@ -561,7 +557,7 @@ def test_bold1() -> None:
 
 # TODO: This is more a question than a skip
 # @pytest.mark.skip(reason="not implemented yet, should we keep the hyphen?")
-def test_bold2() -> None:
+def test_bold_with_hyphen() -> None:
     raw = """
 =={{ja}}==
 [[Category:{{ja}}|あいさかり]]

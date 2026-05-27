@@ -273,6 +273,7 @@ def extract_reading(s: str) -> str | None:
         ("bold", extract_reading_bold),
         ("jachar", extract_reading_jachar),
         ("head", extract_reading_head),
+        ("template", extract_reading_template),
     ):
         if reading := extract_fn(s):
             # print(f"Found {_} {reading=}")
@@ -281,8 +282,12 @@ def extract_reading(s: str) -> str | None:
 
 
 def extract_reading_bold(s: str) -> str | None:
-    """Extract reading from: '''text'''（reading）"""
-    match = re.search(r"(?:'''.+?'''|.+?)([（(【])(.+?)([）)】])", s)
+    """Extract reading from: '''text'''（reading）
+
+    It also extracts the common faulty version: text (reading)
+    We exclude brackets to not match templates in that position.
+    """
+    match = re.search(r"(?:'''[^{}]+?'''|[^{}]+?)([（(【])(.+?)([）)】])", s)
     return postprocess_reading(match) if match else None
 
 
@@ -291,7 +296,7 @@ def extract_reading_jachar(s: str) -> str | None:
     # {{jachar|X|Y}} supports args
     # {{jachars}} is supposed to be written without args, but faulty pages
     # may use {{jachars|アフリカ}}, so args are accepted for both forms.
-    match = re.search(r"{{jachars?(?:\|[^}]*)?}}\s*([（(])(.+?)([）)])", s)
+    match = re.search(r"{{jachars?(?:\|[^}]*)?}}\s*([（(【])(.+?)([）)】])", s)
     return postprocess_reading(match) if match else None
 
 
@@ -300,7 +305,20 @@ def extract_reading_head(s: str) -> str | None:
 
     Note that there can be nested {{templates}} in ...
     """
-    match = re.search(r"\{\{head\|ja.*\}\}\s*([（(])(.+?)([）)])", s)
+    match = re.search(r"\{\{head\|ja.*\}\}\s*([（(【])(.+?)([）)】])", s)
+    return postprocess_reading(match) if match else None
+
+
+JA_TEMPLATES = "|".join(
+    f"ja-{template_name(pos)}" for pos in POS_CHOICES if pos != "trans"
+)
+
+
+def extract_reading_template(s: str) -> str | None:
+    """Extract reading from: {{ja-noun}}（reading）, {{ja-adv}}（reading）, etc."""
+    match = re.search(
+        rf"\{{\{{(?:{JA_TEMPLATES})[^}}]*\}}\}}\s*([（(【])(.+?)([）)】])", s
+    )
     return postprocess_reading(match) if match else None
 
 

@@ -20,6 +20,12 @@ CORRECT_PAGES = [
 [[Category:{{zh}}_色|lan2]]
 #（植物、染料）{{ふりがな|藍|あい}}。
     """,
+    # Don't change templates for ancient Japanese...
+    """
+=={{L|ojp}}==
+==={{verb}}===
+{{head|ojp|verb}}【[[離]]る】
+    """,
 ]
 
 
