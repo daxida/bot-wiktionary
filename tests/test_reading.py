@@ -92,7 +92,6 @@ def test_noun_suru_headword_is_kana1() -> None:
     mktest(raw, expected)
 
 
-@pytest.mark.skip(reason="not implemented yet, correct template but wrong args")
 def test_noun_suru_headword_is_kana2() -> None:
     raw = """
 ==={{noun}}===

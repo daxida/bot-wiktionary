@@ -111,7 +111,12 @@ def try_repl_section(section: list[str], pos: Pos) -> list[str] | None:
     if prelude.new_pos is not None:
         pos = prelude.new_pos
 
-    reading = extract_reading(section[prelude.idx])
+    line_with_reading = section[prelude.idx]
+    # Also update pos if the line_with_reading has a correct template
+    if pos == "noun" and "{{ja-noun-suru" in line_with_reading:
+        pos = "noun-suru"
+
+    reading = extract_reading(line_with_reading)
     if not reading:
         return None
 
