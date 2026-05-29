@@ -720,6 +720,20 @@ def test_adj() -> None:
     mktest(raw, expected)
 
 
+def test_adj2() -> None:
+    raw = """
+==={{adjective}}===
+{{ja-adj}}【[[若]]い・[[少]]い】
+#X
+"""
+    expected = """
+==={{adjective}}===
+{{ja-adj|[[若]]い|[[少]]い}}
+#X
+"""
+    mktest(raw, expected)
+
+
 def test_verb() -> None:
     raw = """
 ==={{verb}}===

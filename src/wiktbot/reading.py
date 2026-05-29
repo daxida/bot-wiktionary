@@ -7,6 +7,7 @@ Pos = Literal[
     "wago",
     "noun",
     "noun-suru",
+    "adjective",
     "adverb",
     "name",
     "trans",
@@ -35,6 +36,8 @@ def template_name(pos: Pos) -> str:
     match pos:
         case "adverb":
             return "adv"
+        case "adjective":
+            return "adj"
         case _:
             return pos
 
@@ -46,6 +49,8 @@ def header(pos: Pos) -> str:
             return "和語の漢字表記"
         case "noun":
             return "名詞"
+        case "adjective":
+            return "形容詞"
         case "adverb":
             return "副詞"
         case "name":
@@ -418,6 +423,7 @@ def repl_reading(s: str) -> str:
     found = False
     for pos in (
         "noun",
+        "adjective",
         "adverb",
         "name",
         "adj",
