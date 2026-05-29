@@ -218,6 +218,9 @@ def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
         clean_reading = reading[1:-1]
         if is_japanese(clean_reading):
             return [clean_reading], []
+        many_readings = try_split_reading(clean_reading)
+        if many_readings and all(is_japanese(r) for r in many_readings):
+            return many_readings, []
 
     if is_kana_only(reading):
         return [reading], []
@@ -246,32 +249,45 @@ ALLOWED_READING_EXTRA_CHARS = "[]-"
 """Brackets are used for wikilinks, hyphens for mixed scripts transliterations."""
 
 
+def _is_kana(c: str) -> bool:
+    return (
+        "\u3040" <= c <= "\u309f"  # hiragana
+        # NOTE: we exclude ・ because it is treated as a separator
+        or ("\u30a0" <= c <= "\u30ff" and c != "\u30fb")  # katakana (excluding ・)
+    )
+
+
 def is_kana_only(s: str) -> bool:
     if not s:
         return False
     # Don't allow hyphens at edges due to prefixes/suffixes
     if s[0] == "-" or s[-1] == "-":
         return False
-    return all(
-        "\u3040" <= c <= "\u309f"  # hiragana
-        or "\u30a0" <= c <= "\u30ff"  # katakana
-        or c in ALLOWED_READING_EXTRA_CHARS
-        for c in s
-    )
+    return all(_is_kana(c) or c in ALLOWED_READING_EXTRA_CHARS for c in s)
 
 
 def is_japanese(s: str) -> bool:
     if not s:
         return False
     return all(
-        "\u3040" <= c <= "\u309f"  # hiragana
-        or "\u30a0" <= c <= "\u30ff"  # katakana
+        _is_kana(c)
         or "\u4e00" <= c <= "\u9fff"  # CJK unified ideographs (kanji)
         or "\u3400" <= c <= "\u4dbf"  # CJK extension A
         or "\uf900" <= c <= "\ufaff"  # CJK compatibility ideographs
         or c in ALLOWED_READING_EXTRA_CHARS
         for c in s
     )
+
+
+def is_japanese_or_separator(s: str) -> bool:
+    return all(is_japanese(c) or c in SEPARATORS for c in s)
+
+
+# Reading with Kanji (and possibly kana) of a kana-only headword
+def is_kanji_reading(s: str) -> bool:
+    # * 【咳き込む】
+    # * 【[[噎]]ぶ、[[咽]]ぶ】
+    return is_japanese_or_separator(s) and not is_kana_only(s)
 
 
 def extract_reading(s: str) -> str | None:
@@ -341,13 +357,7 @@ def postprocess_reading(match: re.Match[str]) -> str:
         content so it is treated as a normal reading.
     """
     open_b, inner, close_b = match.group(1), clean(match.group(2)), match.group(3)
-    if (
-        open_b == "【"
-        and close_b == "】"
-        and is_japanese(inner)
-        and not is_kana_only(inner)
-        and not any(sep in inner for sep in SEPARATORS)
-    ):
+    if open_b == "【" and close_b == "】" and is_kanji_reading(inner):
         return f"【{inner}】"
     return inner
 
@@ -408,7 +418,7 @@ def is_category_ja(line: str) -> bool:
     )
 
 
-SEPARATORS = ",、"
+SEPARATORS = ",、・"
 
 
 # If there is a separator, and it's in the middle, assume multiple readings!

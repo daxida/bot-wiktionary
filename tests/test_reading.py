@@ -924,3 +924,27 @@ def test_reading_is_kanji() -> None:
 #X
 """
     mktest(raw, expected)
+
+
+def test_reading_is_kanji_multiple() -> None:
+    raw = """
+==={{verb}}===
+{{head|ja|verb}}【[[噎]]ぶ、[[咽]]ぶ】
+"""
+    expected = """
+==={{verb}}===
+{{ja-verb|[[噎]]ぶ|[[咽]]ぶ}}
+"""
+    mktest(raw, expected)
+
+
+def test_reading_is_kanji_multiple_other_separator() -> None:
+    raw = """
+==={{verb}}・漬ける===
+'''つける'''【[[漬]]ける・[[浸]]ける】
+"""
+    expected = """
+==={{verb}}・漬ける===
+{{ja-verb|[[漬]]ける|[[浸]]ける}}
+"""
+    mktest(raw, expected)
