@@ -253,6 +253,23 @@ def test_jachars() -> None:
     mktest(raw, expected)
 
 
+def test_jachars_with_file() -> None:
+    raw = """
+=== {{noun}} ===
+[[Category:{{ja}} {{noun}}]]
+[[File:水-seal.svg|right|100px]]
+{{jachars}}（[[しょうけい]]）
+#ものの[[かたち|形]]を[[かたどる]]こと。
+"""
+    expected = """
+=== {{noun}} ===
+[[File:水-seal.svg|right|100px]]
+{{ja-noun|[[しょうけい]]}}
+#ものの[[かたち|形]]を[[かたどる]]こと。
+"""
+    mktest(raw, expected)
+
+
 def test_jachars_with_inner_category() -> None:
     raw = """
 ==={{noun}}===

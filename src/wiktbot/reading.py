@@ -178,7 +178,8 @@ def extract_prelude(lines: list[str], pos: Pos) -> Prelude:
             idx += 1
             continue
         if not try_parse_category(line):
-            if not try_parse_wikipedia_link(line):
+            # File links share behaviour with wikipedia links: they go at the top
+            if not try_parse_wikipedia_link(line) and not try_parse_file_link(line):
                 break
             else:
                 wikipedia.append(line)
@@ -352,6 +353,10 @@ def clean(s: str) -> str:
 
 def try_parse_wikipedia_link(s: str) -> bool:
     return re.search(r"\{\{wikipedia\|[^}]*\}\}", s) is not None
+
+
+def try_parse_file_link(s: str) -> bool:
+    return re.search(r"\[\[[Ff]ile:[^\]]+\]\]", s) is not None
 
 
 def try_parse_category(s: str, cat: str = "") -> bool:
