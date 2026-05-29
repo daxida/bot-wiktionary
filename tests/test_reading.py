@@ -624,6 +624,23 @@ def test_name1() -> None:
     mktest(raw, expected)
 
 
+@pytest.mark.skip(reason="there is no template for this header, nor the headword")
+def test_human_name() -> None:
+    raw = """
+===人名===
+[[Category:{{ja}}_日本語人名|ひてひこ]]
+'''英 彦'''（ひでひこ）
+#日本人の男性名のひとつ。
+"""
+    expected = """
+===人名===
+[[Category:{{ja}}_日本語人名|ひてひこ]]
+'''英 彦'''（ひでひこ）
+#日本人の男性名のひとつ。
+"""
+    mktest(raw, expected)
+
+
 def test_suffix1() -> None:
     raw = """
 ==={{suffix}}===
