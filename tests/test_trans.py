@@ -66,3 +66,15 @@ def test_trans_both_bold() -> None:
 *{{T|it}}: {{t|it|prova}}
         """
     mktest(raw, expected)
+
+
+def test_trans_alt_dots() -> None:
+    raw = """
+===={{trans}}====
+*{{en}}：[[replacement]]
+    """
+    expected = """
+===={{trans}}====
+*{{T|en}}: {{t|en|replacement}}
+        """
+    mktest(raw, expected)
