@@ -78,3 +78,15 @@ def test_trans_alt_dots() -> None:
 *{{T|en}}: {{t|en|replacement}}
         """
     mktest(raw, expected)
+
+
+def test_trans_raw_lang() -> None:
+    raw = """
+===={{trans}}====
+*英語: [[homeomorphism]]
+"""
+    expected = """
+===={{trans}}====
+*{{T|en}}: {{t|en|homeomorphism}}
+"""
+    mktest(raw, expected)

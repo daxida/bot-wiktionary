@@ -5,6 +5,11 @@ from wiktbot.reading import (
     try_repl_with_callback,
 )
 
+RAW_LANG_MAP = {
+    "英語": "en",
+}
+RAW_LANG_PATTERN = "|".join(re.escape(k) for k in RAW_LANG_MAP)
+
 
 def try_repl_trans(s: str, pos: Pos) -> str | None:
     return try_repl_with_callback(s, pos, try_repl_trans_section)
@@ -17,8 +22,13 @@ def try_repl_trans_section(section: list[str], _: Pos) -> list[str] | None:
 def repl_line(line: str) -> str:
     m = re.match(r"\*\s?(?:\[\[)?\{\{(\w{2})\}\}(?:\]\])?[:：] ?(.+)", line)
     if not m:
-        return line
-    lang = m.group(1)
+        # Fallback to raw lang: *英語: [[homeomorphism]]
+        m = re.match(rf"\*\s?({RAW_LANG_PATTERN})[:：] ?(.+)", line)
+        if not m:
+            return line
+        lang = RAW_LANG_MAP[m.group(1)]
+    else:
+        lang = m.group(1)
     words = try_extract_words(m.group(2))
     if not words:
         return line
