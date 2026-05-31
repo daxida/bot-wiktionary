@@ -20,7 +20,7 @@ def try_repl_trans_section(section: list[str], _: Pos) -> list[str] | None:
 
 
 def repl_line(line: str) -> str:
-    m = re.match(r"\*\s?(?:\[\[)?\{\{(\w{2})\}\}(?:\]\])?[:：] ?(.+)", line)
+    m = re.match(r"\*\s?(?:\[\[)?\{\{(\w{2,3})\}\}(?:\]\])?[:：] ?(.+)", line)
     if not m:
         # Fallback to raw lang: *英語: [[homeomorphism]]
         m = re.match(rf"\*\s?({RAW_LANG_PATTERN})[:：] ?(.+)", line)
