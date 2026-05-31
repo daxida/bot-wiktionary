@@ -9,10 +9,17 @@ import re
 def repl_defaultsort_line(line: str) -> str:
     if m := re.match(r"{{DEFAULTSORT:(.*)}}", line):
         readings = m.group(1).split(" ")
-        # Only replace if there is exactly one reading (for now)
-        if len(readings) == 1:
-            reading = readings[0]
-            return f"{{{{kana-DEFAULTSORT|{reading}}}}}"
+        match readings:
+            # If there is exactly one reading: replace
+            case [reading]:
+                return f"{{{{kana-DEFAULTSORT|{reading}}}}}"
+            case [r1, r2]:
+                # Two word and one of them is {{PAGENAME}}, use the other
+                if r1 == "{{PAGENAME}}":
+                    return f"{{{{kana-DEFAULTSORT|{r2}}}}}"
+                elif r2 == "{{PAGENAME}}":
+                    return f"{{{{kana-DEFAULTSORT|{r1}}}}}"
+
     return line
 
 

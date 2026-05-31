@@ -16,3 +16,13 @@ def test_trans_base() -> None:
 {{kana-DEFAULTSORT|うつる}}
         """
     mktest(raw, expected)
+
+
+def test_trans_with_pagename() -> None:
+    raw = """
+{{DEFAULTSORT:かいう {{PAGENAME}}}}
+"""
+    expected = """
+{{kana-DEFAULTSORT|かいう}}
+        """
+    mktest(raw, expected)
