@@ -212,7 +212,10 @@ def extract_prelude(lines: list[str], pos: Pos) -> Prelude:
 
 
 def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
-    """Returns (readings, extra_readings) or None if parsing fails."""
+    """Returns (readings, extra_readings) or None if parsing fails.
+
+    To be precise, extra_readings can be readings or kanji variations etc.
+    """
 
     # Kanji transliterations of kana-only pages (e.g. ころしや: [[殺]]し[[屋]]) can
     # appear wrapped in 【】 when editors don't use the proper template. Since we lack
@@ -238,7 +241,7 @@ def parse_readings(reading: str) -> tuple[list[str], list[str]] | None:
         return many_readings, []
 
     # print(f"[WARN] Found {many_readings=} but they were not kana.")
-    for prefix in ("稀:", "やや古:"):
+    for prefix in ("稀:", "やや古:", "古:", "異表記:"):
         if all(is_kana_only(r) or r.startswith(prefix) for r in many_readings):
             readings = [r for r in many_readings if not r.startswith(prefix)]
             extra_readings = [r for r in many_readings if r.startswith(prefix)]
@@ -421,7 +424,7 @@ def is_category_ja(line: str) -> bool:
     )
 
 
-SEPARATORS = ",、・"
+SEPARATORS = ",、・　"
 
 
 # If there is a separator, and it's in the middle, assume multiple readings!

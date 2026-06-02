@@ -697,11 +697,22 @@ def test_with_extra_old_reading() -> None:
     mktest(raw, expected)
 
 
-# WARN: Do not change anything.
-# (Since there is no replacement, [[Category:{{ja}}|おうおう]] is unchanged)
-#
-# @pytest.mark.skip(reason="not implemented yet, how to deal with 異表記?")
-def test_adverb_with_noise() -> None:
+def test_with_extra_kanji_variation() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}} {{noun}}|かとう かどう]]
+'''[[華]] [[道]]'''（[[かどう]]　異表記:[[花道]]）
+#X
+"""
+    expected = """
+==={{noun}}===
+{{ja-noun|[[かどう]]}} (異表記:[[花道]])
+#X
+"""
+    mktest(raw, expected)
+
+
+def test_adverb_with_extra_kanji_variation() -> None:
     # https://ja.wiktionary.org/wiki/%E6%80%8F%E6%80%8F
     raw = """
 =={{ja}}==
@@ -713,10 +724,8 @@ def test_adverb_with_noise() -> None:
 """
     expected = """
 =={{ja}}==
-[[Category:{{ja}}|おうおう]]
 ==={{adverb}}===
-[[Category:{{ja}} {{adverb}}|おうおう]]
-'''[[怏]] 怏'''（[[おうおう]]　異表記:[[鞅]]鞅）
+{{ja-adv|[[おうおう]]}} (異表記:[[鞅]]鞅)
 # 不満足または楽しまぬ様をいう語。
 """
     mktest(raw, expected)
