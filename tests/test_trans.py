@@ -1,3 +1,5 @@
+import pytest
+
 from wiktbot.trans import repl_trans
 
 
@@ -88,5 +90,26 @@ def test_trans_raw_lang() -> None:
     expected = """
 ===={{trans}}====
 *{{T|en}}: {{t|en|homeomorphism}}
+"""
+    mktest(raw, expected)
+
+
+@pytest.mark.skip(reason="not implemented yet")
+def test_trans_different_sections() -> None:
+    raw = """
+===={{rel}}====
+* {{syn}}: [[something1]]
+===={{trans}}====
+*{{de}}: [[Ausruf]]
+===={{rel}}====
+* {{syn}}: [[something2]]
+"""
+    expected = """
+===={{rel}}====
+* {{syn}}: [[something1]]
+===={{trans}}====
+*{{T|de}}: {{t|de||Ausruf}}
+===={{rel}}====
+* {{syn}}: [[something2]]
 """
     mktest(raw, expected)
