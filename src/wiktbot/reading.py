@@ -10,6 +10,7 @@ Pos = Literal[
     "adjective",
     "adverb",
     "name",
+    "pronoun",
     "trans",
     "adj",
     "verb",
@@ -55,6 +56,8 @@ def header(pos: Pos) -> str:
             return "副詞"
         case "name":
             return "固有名詞"
+        case "pronoun":
+            return "代名詞"
         case "adj":
             return "形容詞"
         case "verb":
@@ -436,6 +439,7 @@ def repl_reading(s: str) -> str:
         "adjective",
         "adverb",
         "name",
+        "pronoun",
         "adj",
         "verb",
         "idiom",
