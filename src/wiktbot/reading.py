@@ -373,7 +373,7 @@ def clean(s: str) -> str:
 
 
 def try_parse_wikipedia_link(s: str) -> bool:
-    return re.search(r"\{\{wikipedia\|[^}]*\}\}", s) is not None
+    return re.search(r"\{\{wikipedia(?:\|[^}]*)?\}\}", s) is not None
 
 
 def try_parse_file_link(s: str) -> bool:

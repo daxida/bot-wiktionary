@@ -974,3 +974,20 @@ def test_reading_is_kanji_multiple_other_separator() -> None:
 {{ja-verb|[[漬]]ける|[[浸]]ける}}
 """
     mktest(raw, expected)
+
+
+def test_with_raw_wikipedia_template() -> None:
+    raw = """
+==={{noun}}===
+[[Category:{{ja}}_{{noun}}]]
+{{wikipedia}}
+{{jachar|記|念|物}}（きねんぶつ）
+#[[記念]]とする[[もの]]。
+"""
+    expected = """
+==={{noun}}===
+{{wikipedia}}
+{{ja-noun|きねんぶつ}}
+#[[記念]]とする[[もの]]。
+"""
+    mktest(raw, expected)
