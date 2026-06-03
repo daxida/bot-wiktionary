@@ -8,7 +8,7 @@ def mktest(raw: str, expected: str) -> None:
     assert expected == received, received
 
 
-def test_trans_base() -> None:
+def test_defaultsort_base() -> None:
     raw = """
 {{DEFAULTSORT:うつる}}
 """
@@ -18,11 +18,35 @@ def test_trans_base() -> None:
     mktest(raw, expected)
 
 
-def test_trans_with_pagename() -> None:
+def test_defaultsort_pagename() -> None:
     raw = """
 {{DEFAULTSORT:かいう {{PAGENAME}}}}
 """
     expected = """
 {{kana-DEFAULTSORT|かいう}}
+        """
+    mktest(raw, expected)
+
+
+def test_defaultsort_preferred_choice() -> None:
+    raw = """
+{{DEFAULTSORT:ほんふん ほんぶん}}
+{{DEFAULTSORT:しゆうそく じゅうぞく}}
+{{DEFAULTSORT:ゆ ゅ}}
+"""
+    expected = """
+{{kana-DEFAULTSORT|ほんぶん}}
+{{kana-DEFAULTSORT|じゅうぞく}}
+{{kana-DEFAULTSORT|ゅ}}
+        """
+    mktest(raw, expected)
+
+
+def test_defaultsort_unknown() -> None:
+    raw = """
+{{DEFAULTSORT:a potato}}
+"""
+    expected = """
+{{DEFAULTSORT:a potato}}
         """
     mktest(raw, expected)
